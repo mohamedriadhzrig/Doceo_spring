@@ -9,6 +9,8 @@ import org.springframework.stereotype.Service;
 
 import com.sopra.core.article.Article;
 import com.sopra.core.article.ArticleService;
+import com.sopra.core.tag.Tag;
+import com.sopra.core.tag.TagService;
 import com.sopra.core.user.User;
 import com.sopra.data.ArticleData;
 import com.sopra.data.ArticleDataList;
@@ -20,6 +22,9 @@ public class ArticleServiceImplementation implements ArticleService {
 
 	@Autowired
 	ArticleRepository articleRepository;
+
+	@Autowired
+	TagService tagService;
 
 	@Override
 	public void save(Article article) {
@@ -47,8 +52,9 @@ public class ArticleServiceImplementation implements ArticleService {
 
 	@Override
 	public ArticleDataList findArticles(String author) {
+
 		List<Article> list = new ArrayList<Article>();
-		list.addAll(articleRepository.findArticles( author));
+		list.addAll(articleRepository.findArticles(author));
 		List<ArticleData> list1 = new ArrayList<ArticleData>();
 		for (Article a : list) {
 			ArticleData articleData = new ArticleData();
@@ -79,8 +85,43 @@ public class ArticleServiceImplementation implements ArticleService {
 
 	@Override
 	public Article findArticleBySlug(String slug) {
-		
+
 		return articleRepository.findArticleBySlug(slug);
+	}
+
+	@Override
+	public ArticleDataList findArticlesByTag( String tag) {
+		Optional<Tag> thisTag = tagService.findTagByName(tag);
+		List<Article> list = new ArrayList<Article>();
+		if (thisTag.isPresent())
+			list.addAll(articleRepository.findArticlesByTag( thisTag.get()));
+		
+		List<ArticleData> list1 = new ArrayList<ArticleData>();
+		for (Article a : list) {
+			ArticleData articleData = new ArticleData();
+			articleData.setId(a.getId());
+			articleData.setBody(a.getBody());
+			articleData.setCreatedAt(a.getCreatedAt());
+			articleData.setDescription(a.getDescription());
+			articleData.setSlug(a.getSlug());
+			articleData.setTitle(a.getTitle());
+			articleData.setTagList(a.getTags());
+			articleData.setUpdatedAt(a.getUpdatedAt());
+			articleData.setFavorited(false);
+			articleData.setFavoritesCount(0);
+			ProfileData profileData = new ProfileData();
+			profileData.setId(a.getUser().getId());
+			profileData.setUsername(a.getUser().getUsername());
+			profileData.setImage(a.getUser().getImage());
+			profileData.setFollowing(false);
+			profileData.setBio(a.getUser().getBio());
+			articleData.setProfileData(profileData);
+			list1.add(articleData);
+
+		}
+
+		ArticleDataList articleDataList = new ArticleDataList(list1, list1.size());
+		return articleDataList;
 	}
 
 }

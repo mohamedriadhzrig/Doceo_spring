@@ -17,6 +17,8 @@ public interface ArticleService {
 
 	 ArticleDataList findArticles(String author);
 	 
+	 ArticleDataList findArticlesByTag(String tag);
+	 
 	 Article findArticleBySlug(String slug);
 
 }

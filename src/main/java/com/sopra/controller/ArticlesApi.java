@@ -109,7 +109,13 @@ public class ArticlesApi {
 			@RequestParam(value = "tag", required = false) String tag,
 			@RequestParam(value = "favorited", required = false) String favoritedBy,
 			@RequestParam(value = "author", required = false) String author, @AuthenticationPrincipal User user) {
-		return ResponseEntity.ok(articleService.findArticles(author));
+		if (!(tag == null))
+			return ResponseEntity.ok(articleService.findArticlesByTag(tag));
+
+		if (!(author == null))
+			return ResponseEntity.ok(articleService.findArticles(author));
+
+		return null;
 	}
 
 	/*
