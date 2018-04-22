@@ -27,7 +27,7 @@ public class DoceoSpringApplication implements CommandLineRunner {
 
 	@Override
 	public void run(String... arg0) throws Exception {
-		storageService.deleteAll();
-		storageService.init();
+		//storageService.deleteAll();
+		//storageService.init();
 	}
 }

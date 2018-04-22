@@ -41,7 +41,7 @@ public class UsersApi {
 	@Autowired
 	private MailService mailService;
 
-	private String defaultImage = "https://www.musictalentindia.com/upload/default.png";
+	
 	@Autowired
 	private EncryptService encryptService;
 	@Autowired
@@ -57,7 +57,7 @@ public class UsersApi {
 		checkInput(registerParam, bindingResult);
 
 		User user = new User(registerParam.getEmail(), registerParam.getUsername(),
-				encryptService.encrypt(registerParam.getPassword()), "", defaultImage);
+				encryptService.encrypt(registerParam.getPassword()), "", "default.png");
 		userService.save(user);
 		UserData userData = new UserData(null, user.getEmail(), user.getUsername(), user.getBio(), user.getImage());
 		return ResponseEntity.status(201).body(userResponse(new UserWithToken(userData, jwtService.toToken(user))));

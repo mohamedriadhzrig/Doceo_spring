@@ -29,8 +29,10 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 				.authenticationEntryPoint(new Http401AuthenticationEntryPoint("Unauthenticated")).and()
 				.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and().authorizeRequests()
 				.antMatchers(HttpMethod.OPTIONS).permitAll().antMatchers(HttpMethod.GET, "/articles/feed")
-				.authenticated().antMatchers(HttpMethod.POST, "/users", "/users/login", "/forgetpassword","/post").permitAll()
-				.antMatchers(HttpMethod.GET, "/articles/**", "/profiles/**", "/tags","/getallfiles").permitAll().anyRequest()
+				.authenticated().antMatchers(HttpMethod.POST, "/users", "/users/login", "/forgetpassword","/upload").permitAll()
+				.antMatchers(HttpMethod.GET, "/articles/**", "/profiles/**", "/tags","/getallfiles","/files/**").permitAll().anyRequest()
+				.authenticated()
+				.antMatchers(HttpMethod.PUT, "/user").permitAll().anyRequest()
 				.authenticated();
 
 		http.addFilterBefore(jwtTokenFilter(), UsernamePasswordAuthenticationFilter.class);

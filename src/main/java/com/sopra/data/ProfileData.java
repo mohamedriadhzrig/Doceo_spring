@@ -5,15 +5,33 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-@Data
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class ProfileData {
 	@JsonIgnore
-	private String id;
+	private Long id;
 	private String username;
 	private String bio;
 	private String image;
 	private boolean following;
+	public Long getId() {
+		return id;
+	}
+	public String getUsername() {
+		return username;
+	}
+	public String getBio() {
+		return bio;
+	}
+	public String getImage() {
+		return "http://localhost:8080/files/"+image;
+	}
+	public boolean isFollowing() {
+		return following;
+	}
+	
+	
 }

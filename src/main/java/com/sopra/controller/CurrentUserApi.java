@@ -6,7 +6,6 @@ import java.util.Optional;
 
 import javax.validation.Valid;
 
-import org.hibernate.validator.constraints.Email;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -18,21 +17,27 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.fasterxml.jackson.annotation.JsonRootName;
 import com.sopra.api.exception.InvalidRequestException;
 import com.sopra.core.user.User;
 import com.sopra.core.user.UserService;
+import com.sopra.core.utility.EncryptService;
 import com.sopra.data.UserData;
 import com.sopra.data.UserWithToken;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 
 @RestController
 @RequestMapping(path = "/user")
 public class CurrentUserApi {
 	@Autowired
 	private UserService userService;
+
+	@Autowired
+	private EncryptService encryptService;
 
 	@GetMapping
 	public ResponseEntity currentUser(@AuthenticationPrincipal User currentUser,
@@ -44,20 +49,25 @@ public class CurrentUserApi {
 	}
 
 	@PutMapping
-	public ResponseEntity updateProfile(@AuthenticationPrincipal User currentUser,
-			@RequestHeader("Authorization") String token, @Valid @RequestBody UpdateUserParam updateUserParam,
+	public ResponseEntity updateProfile(@Valid @RequestBody UpdateUserParam updateUserParam,
+			@AuthenticationPrincipal User currentUser, @RequestHeader("Authorization") String token,
 			BindingResult bindingResult) {
 		if (bindingResult.hasErrors()) {
 			throw new InvalidRequestException(bindingResult);
 		}
-		checkUniquenessOfUsernameAndEmail(currentUser, updateUserParam, bindingResult);
-
-		currentUser.setEmail(updateUserParam.getEmail());
-		currentUser.setUsername(updateUserParam.getUsername());
-		currentUser.setPassword(updateUserParam.getPassword());
-		currentUser.setBio(updateUserParam.getBio());
-		currentUser.setImage(updateUserParam.getImage());
-
+		
+		if (!updateUserParam.getPassword().equals(""))
+			currentUser.update(updateUserParam.getEmail(), updateUserParam.getUsername(),
+					encryptService.encrypt(updateUserParam.getPassword()), updateUserParam.getBio(),
+					currentUser.getImage());
+		else {
+			if (updateUserParam.getImage().equals(""))
+				currentUser.update(updateUserParam.getEmail(), updateUserParam.getUsername(), currentUser.getPassword(),
+						updateUserParam.getBio(), currentUser.getImage());
+			else
+				currentUser.update(updateUserParam.getEmail(), updateUserParam.getUsername(), currentUser.getPassword(),
+						updateUserParam.getBio(), updateUserParam.getImage());
+		}
 		userService.save(currentUser);
 		Optional<User> user = userService.findById(currentUser.getId());
 		UserData userData = new UserData(null, user.get().getEmail(), user.get().getUsername(), user.get().getBio(),
@@ -95,14 +105,16 @@ public class CurrentUserApi {
 	}
 }
 
+@Setter
 @Getter
-@JsonRootName("user")
+@ToString
 @NoArgsConstructor
+@AllArgsConstructor
 class UpdateUserParam {
-	@Email(message = "should be an email")
+	private String bio = "";
 	private String email = "";
+	private String image = "";
 	private String password = "";
 	private String username = "";
-	private String bio = "";
-	private String image = "";
+
 }

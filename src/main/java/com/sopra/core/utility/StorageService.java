@@ -18,7 +18,7 @@ import org.springframework.web.multipart.MultipartFile;
 public class StorageService {
 	
 	Logger log = LoggerFactory.getLogger(this.getClass().getName());
-	private final Path rootLocation = Paths.get("upload-dir");
+	private final Path rootLocation = Paths.get("E:\\Plateforme\\Workspace\\Doceo_spring\\upload-dir");
  
 	public void store(MultipartFile file) {
 		try {

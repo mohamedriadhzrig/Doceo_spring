@@ -23,6 +23,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.sopra.core.article.Article;
 import com.sopra.core.authority.Authority;
+import com.sopra.core.comment.Comment;
 
 @Entity
 @Table(name = "USER")
@@ -58,6 +59,20 @@ public class User implements UserDetails, Serializable {
 	@JoinTable(name = "user_authority", joinColumns = @JoinColumn(name = "user_id", referencedColumnName = "id"), inverseJoinColumns = @JoinColumn(name = "authority_id", referencedColumnName = "id"))
 	private List<Authority> authorities;
 
+	@OneToMany(mappedBy="user")
+	private List<Comment> comments;
+	
+	
+	
+	
+	public List<Comment> getComments() {
+		return comments;
+	}
+
+	public void setComments(List<Comment> comments) {
+		this.comments = comments;
+	}
+
 	@OneToMany(mappedBy = "user")
 	private List<Article> articles;
 
@@ -77,6 +92,28 @@ public class User implements UserDetails, Serializable {
 		this.articles = article;
 	}
 
+	public void update(String email, String username, String password, String bio, String image) {
+        if (!"".equals(email)) {
+            this.email = email;
+        }
+
+        if (!"".equals(username)) {
+            this.username = username;
+        }
+
+        if (!"".equals(password)) {
+            this.password = password;
+        }
+
+        if (!"".equals(bio)) {
+            this.bio = bio;
+        }
+
+        if (!"".equals(image)) {
+            this.image = image;
+        }
+    }
+	
 	public User(String email, String username, String password, String bio, String image) {
 		super();
 		this.username = username;

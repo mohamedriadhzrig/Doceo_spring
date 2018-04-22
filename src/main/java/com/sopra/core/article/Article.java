@@ -1,17 +1,29 @@
 package com.sopra.core.article;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
+import org.passay.CharacterRule;
+import org.passay.EnglishCharacterData;
+import org.passay.PasswordGenerator;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.sopra.core.comment.Comment;
+import com.sopra.core.tag.Tag;
 import com.sopra.core.user.User;
 
 @Entity
@@ -25,17 +37,31 @@ public class Article implements Serializable {
 	private String category;
 	private String description;
 	private String body;
-	@OneToMany(mappedBy="article")
-	private List<Tag> tags;
+
+	@ManyToMany(fetch = FetchType.LAZY, cascade = { CascadeType.PERSIST, CascadeType.MERGE })
+	
+	@JsonIgnore
+	private List<Tag> tags = new ArrayList<Tag>();
 	@Temporal(TemporalType.TIMESTAMP)
-	private Date createdAt;
+	private Date createdAt = new Date();
 	@Temporal(TemporalType.TIMESTAMP)
-	private Date updatedAt;
+	private Date validatedAt;
 	private String path;
 	private int seen;
 	private String statut;
 	@ManyToOne
 	private User user;
+
+	@OneToMany(mappedBy = "article")
+	private List<Comment> comments;
+
+	public List<Comment> getComments() {
+		return comments;
+	}
+
+	public void setComments(List<Comment> comments) {
+		this.comments = comments;
+	}
 
 	public String getSlug() {
 		return slug;
@@ -94,11 +120,11 @@ public class Article implements Serializable {
 	}
 
 	public Date getUpdatedAt() {
-		return updatedAt;
+		return validatedAt;
 	}
 
 	public void setUpdatedAt(Date updatedAt) {
-		this.updatedAt = updatedAt;
+		this.validatedAt = updatedAt;
 	}
 
 	public String getPath() {
@@ -144,14 +170,13 @@ public class Article implements Serializable {
 		this.body = body;
 		this.tags = tags;
 		this.createdAt = createdAt;
-		this.updatedAt = updatedAt;
+		this.validatedAt = updatedAt;
 		this.path = path;
 		this.seen = seen;
 		this.statut = statut;
 		this.user = userId;
 	}
 
-	
 	public Article() {
 		super();
 
@@ -165,17 +190,22 @@ public class Article implements Serializable {
 		this.id = id;
 	}
 
-	public Article(String title, String description, String body, List<Tag> tags, User userId) {
+	public Article(String title, String description, String body, User userId) {
 		super();
 		this.slug = toSlug(title);
 		this.title = title;
 		this.description = description;
 		this.body = body;
-		this.tags = tags;
+
 		this.user = userId;
 	}
 
 	private String toSlug(String title) {
-        return title.toLowerCase().replaceAll("[\\&|[\\uFE30-\\uFFA0]|\\â€™|\\â€?|\\s\\?\\,\\.]+", "-");
-    }
+		List rules = Arrays.asList(new CharacterRule(EnglishCharacterData.UpperCase, 1),
+				new CharacterRule(EnglishCharacterData.LowerCase, 1), new CharacterRule(EnglishCharacterData.Digit, 1));
+		PasswordGenerator generator = new PasswordGenerator();
+		String id = generator.generatePassword(8, rules);
+
+		return title.toLowerCase().replaceAll("[\\&|[\\uFE30-\\uFFA0]|\\â€™|\\â€?|\\s\\?\\,\\.]+", "-") + id;
+	}
 }
