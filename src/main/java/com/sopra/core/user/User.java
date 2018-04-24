@@ -53,22 +53,21 @@ public class User implements UserDetails, Serializable {
 	private String image;
 
 	@Column(name = "bio")
-	private String bio;
+	private String bio = "";
 
 	@ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	@JoinTable(name = "user_authority", joinColumns = @JoinColumn(name = "user_id", referencedColumnName = "id"), inverseJoinColumns = @JoinColumn(name = "authority_id", referencedColumnName = "id"))
 	private List<Authority> authorities;
 
-	@OneToMany(mappedBy="user")
+	@OneToMany(mappedBy = "user")
 	private List<Comment> comments;
-	
+
 	@ManyToMany(fetch = FetchType.LAZY, cascade = { CascadeType.PERSIST, CascadeType.MERGE })
 	private List<Article> favoriteArticles;
-	
+
 	@OneToMany(mappedBy = "user")
 	private List<Article> articles;
-	
-	
+
 	public List<Article> getFavoriteArticles() {
 		return favoriteArticles;
 	}
@@ -84,8 +83,6 @@ public class User implements UserDetails, Serializable {
 	public void setComments(List<Comment> comments) {
 		this.comments = comments;
 	}
-
-	
 
 	public List<Article> getArticle() {
 		return articles;
@@ -104,27 +101,27 @@ public class User implements UserDetails, Serializable {
 	}
 
 	public void update(String email, String username, String password, String bio, String image) {
-        if (!"".equals(email)) {
-            this.email = email;
-        }
+		if (!"".equals(email)) {
+			this.email = email;
+		}
 
-        if (!"".equals(username)) {
-            this.username = username;
-        }
+		if (!"".equals(username)) {
+			this.username = username;
+		}
 
-        if (!"".equals(password)) {
-            this.password = password;
-        }
+		if (!"".equals(password)) {
+			this.password = password;
+		}
 
-        if (!"".equals(bio)) {
-            this.bio = bio;
-        }
+		if (!"".equals(bio)) {
+			this.bio = bio;
+		}
 
-        if (!"".equals(image)) {
-            this.image = image;
-        }
-    }
-	
+		if (!"".equals(image)) {
+			this.image = image;
+		}
+	}
+
 	public User(String email, String username, String password, String bio, String image) {
 		super();
 		this.username = username;

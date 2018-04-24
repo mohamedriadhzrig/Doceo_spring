@@ -15,12 +15,12 @@ public interface ArticleService {
 
 	void remove(Article article);
 
-	 ArticleDataList findArticles(String author);
-	 
-	 ArticleDataList findArticlesByTag(String tag);
-	 
-	 ArticleDataList findFavoriteArticles(String uername);
-	 
-	 Article findArticleBySlug(String slug);
+	ArticleDataList findArticles(String author, User user);
+
+	ArticleDataList findArticlesByTag(String tag, User user);
+
+	ArticleDataList findFavoriteArticles(String uername, User user);
+
+	Article findArticleBySlug(String slug);
 
 }

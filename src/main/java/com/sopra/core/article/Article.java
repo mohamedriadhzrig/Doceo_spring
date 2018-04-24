@@ -58,6 +58,22 @@ public class Article implements Serializable {
 	@OneToMany(mappedBy = "article")
 	private List<Comment> comments;
 
+	public List<User> getLikedBy() {
+		return likedBy;
+	}
+
+	public void setLikedBy(List<User> likedBy) {
+		this.likedBy = likedBy;
+	}
+
+	public Date getValidatedAt() {
+		return validatedAt;
+	}
+
+	public void setValidatedAt(Date validatedAt) {
+		this.validatedAt = validatedAt;
+	}
+
 	public List<Comment> getComments() {
 		return comments;
 	}

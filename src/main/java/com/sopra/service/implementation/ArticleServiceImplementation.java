@@ -55,7 +55,7 @@ public class ArticleServiceImplementation implements ArticleService {
 	}
 
 	@Override
-	public ArticleDataList findArticles(String author) {
+	public ArticleDataList findArticles(String author, User user) {
 
 		List<Article> list = new ArrayList<Article>();
 		list.addAll(articleRepository.findArticles(author));
@@ -71,8 +71,8 @@ public class ArticleServiceImplementation implements ArticleService {
 			articleData.setTitle(a.getTitle());
 			articleData.setTagList(a.getTags());
 			articleData.setUpdatedAt(a.getUpdatedAt());
-			articleData.setFavorited(false);
-			articleData.setFavoritesCount(0);
+			articleData.setFavorited(a.getUser().getUsername() == user.getUsername() || a.getLikedBy().contains(user));
+			articleData.setFavoritesCount(a.getLikedBy().size());
 			ProfileData profileData = new ProfileData();
 			profileData.setId(a.getUser().getId());
 			profileData.setUsername(a.getUser().getUsername());
@@ -95,7 +95,7 @@ public class ArticleServiceImplementation implements ArticleService {
 	}
 
 	@Override
-	public ArticleDataList findArticlesByTag(String tag) {
+	public ArticleDataList findArticlesByTag(String tag, User user) {
 		Optional<Tag> thisTag = tagService.findTagByName(tag);
 		List<Article> list = new ArrayList<Article>();
 		if (thisTag.isPresent())
@@ -113,8 +113,8 @@ public class ArticleServiceImplementation implements ArticleService {
 			articleData.setTitle(a.getTitle());
 			articleData.setTagList(a.getTags());
 			articleData.setUpdatedAt(a.getUpdatedAt());
-			articleData.setFavorited(false);
-			articleData.setFavoritesCount(0);
+			articleData.setFavorited(a.getUser().getUsername() == user.getUsername() || a.getLikedBy().contains(user));
+			articleData.setFavoritesCount(a.getLikedBy().size());
 			ProfileData profileData = new ProfileData();
 			profileData.setId(a.getUser().getId());
 			profileData.setUsername(a.getUser().getUsername());
@@ -131,7 +131,7 @@ public class ArticleServiceImplementation implements ArticleService {
 	}
 
 	@Override
-	public ArticleDataList findFavoriteArticles(String uername) {
+	public ArticleDataList findFavoriteArticles(String uername, User user) {
 		List<Article> list = new ArrayList<Article>();
 		list.addAll(userRepository.findUserByUsername(uername).getFavoriteArticles());
 		List<ArticleData> list1 = new ArrayList<ArticleData>();
@@ -146,8 +146,8 @@ public class ArticleServiceImplementation implements ArticleService {
 			articleData.setTitle(a.getTitle());
 			articleData.setTagList(a.getTags());
 			articleData.setUpdatedAt(a.getUpdatedAt());
-			articleData.setFavorited(false);
-			articleData.setFavoritesCount(0);
+			articleData.setFavorited(a.getUser().getUsername() == user.getUsername() || a.getLikedBy().contains(user));
+			articleData.setFavoritesCount(a.getLikedBy().size());
 			ProfileData profileData = new ProfileData();
 			profileData.setId(a.getUser().getId());
 			profileData.setUsername(a.getUser().getUsername());

@@ -52,6 +52,7 @@ public class ArticlesApi {
 	@GetMapping(value = "/{slug}")
 	public ResponseEntity article(@PathVariable("slug") String slug, @AuthenticationPrincipal User user) {
 
+
 		Article article = articleService.findArticleBySlug(slug);
 		ProfileData profileData = new ProfileData();
 		profileData.setBio(article.getUser().getBio());
@@ -117,14 +118,15 @@ public class ArticlesApi {
 			@RequestParam(value = "tag", required = false) String tag,
 			@RequestParam(value = "favorited", required = false) String favoritedBy,
 			@RequestParam(value = "author", required = false) String author, @AuthenticationPrincipal User user) {
+		User u = userService.findByUsername(user.getUsername()).get();
 		if (!(favoritedBy == null))
-			return ResponseEntity.ok(articleService.findFavoriteArticles(favoritedBy));
+			return ResponseEntity.ok(articleService.findFavoriteArticles(favoritedBy, u));
 
 		if (!(tag == null))
-			return ResponseEntity.ok(articleService.findArticlesByTag(tag));
+			return ResponseEntity.ok(articleService.findArticlesByTag(tag, u));
 
 		if (!(author == null))
-			return ResponseEntity.ok(articleService.findArticles(author));
+			return ResponseEntity.ok(articleService.findArticles(author, u));
 
 		return null;
 	}
@@ -153,8 +155,9 @@ public class ArticlesApi {
 	@DeleteMapping(path = "/{slug}/favorite")
 	public ResponseEntity unfavoriteArticle(@PathVariable("slug") String slug, @AuthenticationPrincipal User user) {
 		Article article = articleService.findArticleBySlug(slug);
-
-		user.getFavoriteArticles().remove(article);
+		User u = new User();
+		u = userService.findByUsername(user.getUsername()).get();
+		u.getFavoriteArticles().remove(article);
 		userService.save(user);
 
 		ProfileData profileData = new ProfileData();
