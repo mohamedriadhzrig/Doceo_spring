@@ -55,16 +55,28 @@ public class User implements UserDetails, Serializable {
 	@Column(name = "bio")
 	private String bio;
 
-	@ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+	@ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	@JoinTable(name = "user_authority", joinColumns = @JoinColumn(name = "user_id", referencedColumnName = "id"), inverseJoinColumns = @JoinColumn(name = "authority_id", referencedColumnName = "id"))
 	private List<Authority> authorities;
 
 	@OneToMany(mappedBy="user")
 	private List<Comment> comments;
 	
+	@ManyToMany(fetch = FetchType.LAZY, cascade = { CascadeType.PERSIST, CascadeType.MERGE })
+	private List<Article> favoriteArticles;
+	
+	@OneToMany(mappedBy = "user")
+	private List<Article> articles;
 	
 	
-	
+	public List<Article> getFavoriteArticles() {
+		return favoriteArticles;
+	}
+
+	public void setFavoriteArticles(List<Article> favoriteArticles) {
+		this.favoriteArticles = favoriteArticles;
+	}
+
 	public List<Comment> getComments() {
 		return comments;
 	}
@@ -73,8 +85,7 @@ public class User implements UserDetails, Serializable {
 		this.comments = comments;
 	}
 
-	@OneToMany(mappedBy = "user")
-	private List<Article> articles;
+	
 
 	public List<Article> getArticle() {
 		return articles;

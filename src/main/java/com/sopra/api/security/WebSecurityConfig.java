@@ -32,6 +32,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 				.authenticated().antMatchers(HttpMethod.POST, "/users", "/users/login", "/forgetpassword","/upload").permitAll()
 				.antMatchers(HttpMethod.GET, "/articles/**", "/profiles/**", "/tags","/getallfiles","/files/**").permitAll().anyRequest()
 				.authenticated()
+				.antMatchers(HttpMethod.POST, "/articles/**").permitAll().anyRequest()
+				.authenticated()
 				.antMatchers(HttpMethod.PUT, "/user").permitAll().anyRequest()
 				.authenticated();
 

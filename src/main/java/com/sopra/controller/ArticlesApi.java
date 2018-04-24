@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -27,6 +28,7 @@ import com.sopra.core.article.ArticleService;
 import com.sopra.core.tag.Tag;
 import com.sopra.core.tag.TagService;
 import com.sopra.core.user.User;
+import com.sopra.core.user.UserService;
 import com.sopra.data.ArticleData;
 import com.sopra.data.ProfileData;
 
@@ -42,6 +44,9 @@ public class ArticlesApi {
 	private ArticleService articleService;
 
 	@Autowired
+	private UserService userService;
+
+	@Autowired
 	private TagService tagService;
 
 	@GetMapping(value = "/{slug}")
@@ -52,11 +57,14 @@ public class ArticlesApi {
 		profileData.setBio(article.getUser().getBio());
 		profileData.setUsername(article.getUser().getUsername());
 		profileData.setImage(article.getUser().getImage());
+		article.setSeen(article.getSeen());
 
 		profileData.setFollowing(false);
 		ArticleData articleData = new ArticleData(article.getId(), article.getSlug(), article.getTitle(),
-				article.getDescription(), article.getBody(), false, 1, article.getCreatedAt(), article.getUpdatedAt(),
-				article.getTags(), profileData);
+				article.getDescription(), article.getBody(), article.getSeen(), false, 1, article.getCreatedAt(),
+				article.getUpdatedAt(), article.getTags(), profileData);
+		article.setSeen(article.getSeen() + 1);
+		articleService.save(article);
 		return ResponseEntity.ok(articleResponse(articleData));
 	}
 
@@ -96,8 +104,8 @@ public class ArticlesApi {
 				profileData.setFollowing(false);
 
 				ArticleData articleData = new ArticleData(article.getId(), article.getSlug(), article.getTitle(),
-						article.getDescription(), article.getBody(), false, 1, article.getCreatedAt(),
-						article.getUpdatedAt(), article.getTags(), profileData);
+						article.getDescription(), article.getBody(), article.getSeen(), false, 1,
+						article.getCreatedAt(), article.getUpdatedAt(), article.getTags(), profileData);
 				put("article", articleData);
 			}
 		});
@@ -109,6 +117,9 @@ public class ArticlesApi {
 			@RequestParam(value = "tag", required = false) String tag,
 			@RequestParam(value = "favorited", required = false) String favoritedBy,
 			@RequestParam(value = "author", required = false) String author, @AuthenticationPrincipal User user) {
+		if (!(favoritedBy == null))
+			return ResponseEntity.ok(articleService.findFavoriteArticles(favoritedBy));
+
 		if (!(tag == null))
 			return ResponseEntity.ok(articleService.findArticlesByTag(tag));
 
@@ -116,6 +127,47 @@ public class ArticlesApi {
 			return ResponseEntity.ok(articleService.findArticles(author));
 
 		return null;
+	}
+
+	@PostMapping(value = "/{slug}/favorite")
+	public ResponseEntity favoriteArticle(@PathVariable("slug") String slug, @AuthenticationPrincipal User user) {
+		Article article = articleService.findArticleBySlug(slug);
+		User u = new User();
+		u = userService.findByUsername(user.getUsername()).get();
+		u.getFavoriteArticles().add(article);
+		userService.save(u);
+
+		ProfileData profileData = new ProfileData();
+		profileData.setBio(u.getBio());
+		profileData.setUsername(u.getUsername());
+		profileData.setImage(u.getImage());
+		profileData.setId(u.getId());
+		profileData.setFollowing(false);
+
+		ArticleData articleData = new ArticleData(article.getId(), article.getSlug(), article.getTitle(),
+				article.getDescription(), article.getBody(), article.getSeen(), false, 1, article.getCreatedAt(),
+				article.getUpdatedAt(), article.getTags(), profileData);
+		return responseArticleData(articleData);
+	}
+
+	@DeleteMapping(path = "/{slug}/favorite")
+	public ResponseEntity unfavoriteArticle(@PathVariable("slug") String slug, @AuthenticationPrincipal User user) {
+		Article article = articleService.findArticleBySlug(slug);
+
+		user.getFavoriteArticles().remove(article);
+		userService.save(user);
+
+		ProfileData profileData = new ProfileData();
+		profileData.setBio(user.getBio());
+		profileData.setUsername(user.getUsername());
+		profileData.setImage(user.getImage());
+		profileData.setId(user.getId());
+		profileData.setFollowing(false);
+
+		ArticleData articleData = new ArticleData(article.getId(), article.getSlug(), article.getTitle(),
+				article.getDescription(), article.getBody(), article.getSeen(), false, 1, article.getCreatedAt(),
+				article.getUpdatedAt(), article.getTags(), profileData);
+		return responseArticleData(articleData);
 	}
 
 	/*
@@ -149,6 +201,14 @@ public class ArticlesApi {
 				put("article", articleData);
 			}
 		};
+	}
+
+	private ResponseEntity<HashMap<String, Object>> responseArticleData(final ArticleData articleData) {
+		return ResponseEntity.ok(new HashMap<String, Object>() {
+			{
+				put("article", articleData);
+			}
+		});
 	}
 }
 

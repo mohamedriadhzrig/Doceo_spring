@@ -16,12 +16,16 @@ import com.sopra.data.ArticleData;
 import com.sopra.data.ArticleDataList;
 import com.sopra.data.ProfileData;
 import com.sopra.repositories.ArticleRepository;
+import com.sopra.repositories.UserRepository;
 
 @Service
 public class ArticleServiceImplementation implements ArticleService {
 
 	@Autowired
 	ArticleRepository articleRepository;
+
+	@Autowired
+	UserRepository userRepository;
 
 	@Autowired
 	TagService tagService;
@@ -58,6 +62,7 @@ public class ArticleServiceImplementation implements ArticleService {
 		List<ArticleData> list1 = new ArrayList<ArticleData>();
 		for (Article a : list) {
 			ArticleData articleData = new ArticleData();
+			articleData.setSeen(a.getSeen());
 			articleData.setId(a.getId());
 			articleData.setBody(a.getBody());
 			articleData.setCreatedAt(a.getCreatedAt());
@@ -90,15 +95,16 @@ public class ArticleServiceImplementation implements ArticleService {
 	}
 
 	@Override
-	public ArticleDataList findArticlesByTag( String tag) {
+	public ArticleDataList findArticlesByTag(String tag) {
 		Optional<Tag> thisTag = tagService.findTagByName(tag);
 		List<Article> list = new ArrayList<Article>();
 		if (thisTag.isPresent())
-			list.addAll(articleRepository.findArticlesByTag( thisTag.get()));
-		
+			list.addAll(articleRepository.findArticlesByTag(thisTag.get()));
+
 		List<ArticleData> list1 = new ArrayList<ArticleData>();
 		for (Article a : list) {
 			ArticleData articleData = new ArticleData();
+			articleData.setSeen(a.getSeen());
 			articleData.setId(a.getId());
 			articleData.setBody(a.getBody());
 			articleData.setCreatedAt(a.getCreatedAt());
@@ -120,6 +126,38 @@ public class ArticleServiceImplementation implements ArticleService {
 
 		}
 
+		ArticleDataList articleDataList = new ArticleDataList(list1, list1.size());
+		return articleDataList;
+	}
+
+	@Override
+	public ArticleDataList findFavoriteArticles(String uername) {
+		List<Article> list = new ArrayList<Article>();
+		list.addAll(userRepository.findUserByUsername(uername).getFavoriteArticles());
+		List<ArticleData> list1 = new ArrayList<ArticleData>();
+		for (Article a : list) {
+			ArticleData articleData = new ArticleData();
+			articleData.setSeen(a.getSeen());
+			articleData.setId(a.getId());
+			articleData.setBody(a.getBody());
+			articleData.setCreatedAt(a.getCreatedAt());
+			articleData.setDescription(a.getDescription());
+			articleData.setSlug(a.getSlug());
+			articleData.setTitle(a.getTitle());
+			articleData.setTagList(a.getTags());
+			articleData.setUpdatedAt(a.getUpdatedAt());
+			articleData.setFavorited(false);
+			articleData.setFavoritesCount(0);
+			ProfileData profileData = new ProfileData();
+			profileData.setId(a.getUser().getId());
+			profileData.setUsername(a.getUser().getUsername());
+			profileData.setImage(a.getUser().getImage());
+			profileData.setFollowing(false);
+			profileData.setBio(a.getUser().getBio());
+			articleData.setProfileData(profileData);
+			list1.add(articleData);
+
+		}
 		ArticleDataList articleDataList = new ArticleDataList(list1, list1.size());
 		return articleDataList;
 	}

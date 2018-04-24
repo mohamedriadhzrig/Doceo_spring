@@ -39,15 +39,18 @@ public class Article implements Serializable {
 	private String body;
 
 	@ManyToMany(fetch = FetchType.LAZY, cascade = { CascadeType.PERSIST, CascadeType.MERGE })
-	
+
 	@JsonIgnore
 	private List<Tag> tags = new ArrayList<Tag>();
+	@ManyToMany(fetch = FetchType.LAZY, cascade = { CascadeType.PERSIST,
+			CascadeType.MERGE }, mappedBy = "favoriteArticles")
+	private List<User> likedBy = new ArrayList<User>();
 	@Temporal(TemporalType.TIMESTAMP)
 	private Date createdAt = new Date();
 	@Temporal(TemporalType.TIMESTAMP)
 	private Date validatedAt;
 	private String path;
-	private int seen;
+	private int seen = 0;
 	private String statut;
 	@ManyToOne
 	private User user;

@@ -24,6 +24,7 @@ public class ArticleData {
 	private String title;
 	private String description;
 	private String body;
+	private int seen;
 	private boolean favorited;
 	private int favoritesCount;
 	@Temporal(TemporalType.TIMESTAMP)
@@ -82,4 +83,9 @@ public class ArticleData {
 		return profileData;
 	}
 
+	public int getSeen() {
+		return seen;
+	}
+
+	
 }
