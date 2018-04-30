@@ -20,6 +20,8 @@ public interface ArticleService {
 	ArticleDataList findArticlesByTag(String tag, User user);
 
 	ArticleDataList findFavoriteArticles(String uername, User user);
+	
+	ArticleDataList findAll(User user);
 
 	Article findArticleBySlug(String slug);
 

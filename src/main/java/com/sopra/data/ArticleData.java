@@ -24,6 +24,7 @@ public class ArticleData {
 	private String title;
 	private String description;
 	private String body;
+	private String fileType;
 	private int seen;
 	private boolean favorited;
 	private int favoritesCount;
@@ -35,6 +36,7 @@ public class ArticleData {
 	@JsonProperty("author")
 	private ProfileData profileData;
 
+	
 	public Long getId() {
 		return id;
 	}
@@ -85,6 +87,10 @@ public class ArticleData {
 
 	public int getSeen() {
 		return seen;
+	}
+
+	public String getFileType() {
+		return fileType;
 	}
 
 	

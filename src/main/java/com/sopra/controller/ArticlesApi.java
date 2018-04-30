@@ -52,7 +52,6 @@ public class ArticlesApi {
 	@GetMapping(value = "/{slug}")
 	public ResponseEntity article(@PathVariable("slug") String slug, @AuthenticationPrincipal User user) {
 
-
 		Article article = articleService.findArticleBySlug(slug);
 		ProfileData profileData = new ProfileData();
 		profileData.setBio(article.getUser().getBio());
@@ -62,10 +61,12 @@ public class ArticlesApi {
 
 		profileData.setFollowing(false);
 		ArticleData articleData = new ArticleData(article.getId(), article.getSlug(), article.getTitle(),
-				article.getDescription(), article.getBody(), article.getSeen(), false, 1, article.getCreatedAt(),
-				article.getUpdatedAt(), article.getTags(), profileData);
-		article.setSeen(article.getSeen() + 1);
-		articleService.save(article);
+				article.getDescription(), article.getBody(), article.getFileType(), article.getSeen(), false, 1,
+				article.getCreatedAt(), article.getUpdatedAt(), article.getTags(), profileData);
+		if (!(article.getUser().getUsername().equals(user.getUsername()))) {
+			article.setSeen(article.getSeen() + 1);
+			articleService.save(article);
+		}
 		return ResponseEntity.ok(articleResponse(articleData));
 	}
 
@@ -78,7 +79,7 @@ public class ArticlesApi {
 
 		Article article = new Article(newArticleParam.getTitle(), newArticleParam.getDescription(),
 				newArticleParam.getBody(), user);
-
+		article.setFileType(newArticleParam.getFileType());
 		for (String t : newArticleParam.getTagList()) {
 			Optional<Tag> existingTag = tagService.findTagByName(t);
 			if (!existingTag.isPresent()) {
@@ -105,7 +106,7 @@ public class ArticlesApi {
 				profileData.setFollowing(false);
 
 				ArticleData articleData = new ArticleData(article.getId(), article.getSlug(), article.getTitle(),
-						article.getDescription(), article.getBody(), article.getSeen(), false, 1,
+						article.getDescription(), article.getBody(), article.getFileType(), article.getSeen(), false, 1,
 						article.getCreatedAt(), article.getUpdatedAt(), article.getTags(), profileData);
 				put("article", articleData);
 			}
@@ -128,7 +129,7 @@ public class ArticlesApi {
 		if (!(author == null))
 			return ResponseEntity.ok(articleService.findArticles(author, u));
 
-		return null;
+		return ResponseEntity.ok(articleService.findAll(u));
 	}
 
 	@PostMapping(value = "/{slug}/favorite")
@@ -147,8 +148,8 @@ public class ArticlesApi {
 		profileData.setFollowing(false);
 
 		ArticleData articleData = new ArticleData(article.getId(), article.getSlug(), article.getTitle(),
-				article.getDescription(), article.getBody(), article.getSeen(), false, 1, article.getCreatedAt(),
-				article.getUpdatedAt(), article.getTags(), profileData);
+				article.getDescription(), article.getBody(), article.getFileType(), article.getSeen(), false, 1,
+				article.getCreatedAt(), article.getUpdatedAt(), article.getTags(), profileData);
 		return responseArticleData(articleData);
 	}
 
@@ -168,8 +169,8 @@ public class ArticlesApi {
 		profileData.setFollowing(false);
 
 		ArticleData articleData = new ArticleData(article.getId(), article.getSlug(), article.getTitle(),
-				article.getDescription(), article.getBody(), article.getSeen(), false, 1, article.getCreatedAt(),
-				article.getUpdatedAt(), article.getTags(), profileData);
+				article.getDescription(), article.getBody(), article.getFileType(), article.getSeen(), false, 1,
+				article.getCreatedAt(), article.getUpdatedAt(), article.getTags(), profileData);
 		return responseArticleData(articleData);
 	}
 
@@ -226,5 +227,7 @@ class NewArticleParam {
 	private String description;
 	@NotBlank(message = "can't be empty")
 	private String body;
+	@NotBlank(message = "can't be empty")
+	private String fileType;
 	private List<String> tagList;
 }

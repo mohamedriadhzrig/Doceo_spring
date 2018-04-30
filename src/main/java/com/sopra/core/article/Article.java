@@ -37,6 +37,7 @@ public class Article implements Serializable {
 	private String category;
 	private String description;
 	private String body;
+	private String fileType;
 
 	@ManyToMany(fetch = FetchType.LAZY, cascade = { CascadeType.PERSIST, CascadeType.MERGE })
 
@@ -80,6 +81,15 @@ public class Article implements Serializable {
 
 	public void setComments(List<Comment> comments) {
 		this.comments = comments;
+	}
+	
+	
+	public String getFileType() {
+		return fileType;
+	}
+
+	public void setFileType(String fileType) {
+		this.fileType = fileType;
 	}
 
 	public String getSlug() {
