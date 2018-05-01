@@ -54,4 +54,9 @@ public class StorageService {
 		}
 	}
 
+	public Path getRootLocation() {
+		return rootLocation;
+	}
+	
+
 }
