@@ -16,15 +16,20 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.fasterxml.jackson.annotation.JsonRootName;
+
 import com.sopra.api.exception.InvalidRequestException;
+import com.sopra.api.exception.NoAuthorizationException;
+import com.sopra.api.exception.ResourceNotFoundException;
 import com.sopra.core.article.Article;
 import com.sopra.core.article.ArticleService;
+
 import com.sopra.core.tag.Tag;
 import com.sopra.core.tag.TagService;
 import com.sopra.core.user.User;
@@ -69,6 +74,24 @@ public class ArticlesApi {
 		}
 		return ResponseEntity.ok(articleResponse(articleData));
 	}
+	@PutMapping(value = "/{slug}")
+    public ResponseEntity<?> updateArticle(@PathVariable("slug") String slug,
+                                           @AuthenticationPrincipal User user,
+                                           @Valid @RequestBody UpdateArticleParam updateArticleParam) {
+        Article article= articleService.findArticleBySlug(slug);
+        		article.setTitle(updateArticleParam.getTitle());
+        		article.setDescription(updateArticleParam.getDescription());
+        		article.setBody(updateArticleParam.getBody());
+        		articleService.save(article);
+        		ProfileData profileData = new ProfileData();
+        		profileData.setBio(article.getUser().getBio());
+        		profileData.setUsername(article.getUser().getUsername());
+        		profileData.setImage(article.getUser().getImage());
+        		ArticleData articleData = new ArticleData(article.getId(), article.getSlug(), article.getTitle(),
+        				article.getDescription(), article.getBody(), article.getFileType(), article.getSeen(), false, 1,
+        				article.getCreatedAt(), article.getUpdatedAt(), article.getTags(), profileData);
+        		return ResponseEntity.ok(articleResponse(articleData));
+    }
 
 	@PostMapping
 	public ResponseEntity createArticle(@Valid @RequestBody NewArticleParam newArticleParam,
@@ -173,6 +196,8 @@ public class ArticlesApi {
 				article.getCreatedAt(), article.getUpdatedAt(), article.getTags(), profileData);
 		return responseArticleData(articleData);
 	}
+	
+	
 
 	/*
 	 * @GetMapping(path = "feed") public ResponseEntity getFeed(@RequestParam(value
@@ -230,4 +255,13 @@ class NewArticleParam {
 	@NotBlank(message = "can't be empty")
 	private String fileType;
 	private List<String> tagList;
+}
+
+@Getter
+@NoArgsConstructor
+@JsonRootName("article")
+class UpdateArticleParam {
+    private String title = "";
+    private String body = "";
+    private String description = "";
 }

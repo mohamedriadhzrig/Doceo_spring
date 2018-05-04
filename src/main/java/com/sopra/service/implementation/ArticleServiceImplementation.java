@@ -6,6 +6,7 @@ import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.sopra.core.article.Article;
 import com.sopra.core.article.ArticleService;
@@ -17,7 +18,7 @@ import com.sopra.data.ArticleDataList;
 import com.sopra.data.ProfileData;
 import com.sopra.repositories.ArticleRepository;
 import com.sopra.repositories.UserRepository;
-
+@Transactional
 @Service
 public class ArticleServiceImplementation implements ArticleService {
 
@@ -166,6 +167,7 @@ public class ArticleServiceImplementation implements ArticleService {
 	public ArticleDataList findAll(User user) {
 		List<Article> list = new ArrayList<Article>();
 		list.addAll(articleRepository.findAll());
+		System.out.println("******"+list.size());
 		List<ArticleData> list1 = new ArrayList<ArticleData>();
 		for (Article a : list) {
 			ArticleData articleData = new ArticleData();
@@ -190,6 +192,7 @@ public class ArticleServiceImplementation implements ArticleService {
 			list1.add(articleData);
 
 		}
+		System.out.println(list1.size()+"******"+list.size());
 		ArticleDataList articleDataList = new ArticleDataList(list1, list1.size());
 		return articleDataList;
 
