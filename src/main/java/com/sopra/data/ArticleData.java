@@ -35,6 +35,7 @@ public class ArticleData {
 	private List<Tag> tagList;
 	@JsonProperty("author")
 	private ProfileData profileData;
+	private float rating;
 
 	
 	public Long getId() {
@@ -91,6 +92,10 @@ public class ArticleData {
 
 	public String getFileType() {
 		return fileType;
+	}
+
+	public float getRating() {
+		return rating;
 	}
 
 	

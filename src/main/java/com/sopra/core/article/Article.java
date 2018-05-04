@@ -26,6 +26,7 @@ import org.passay.PasswordGenerator;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.sopra.core.comment.Comment;
+import com.sopra.core.rate.Rate;
 import com.sopra.core.tag.Tag;
 import com.sopra.core.user.User;
 
@@ -62,6 +63,19 @@ public class Article implements Serializable {
 
 	@OneToMany(mappedBy = "article")
 	private List<Comment> comments;
+
+	
+	@OneToMany(mappedBy = "article")
+	private List<Rate> ratings= new ArrayList<Rate>();
+	
+	
+	public List<Rate> getRatings() {
+		return ratings;
+	}
+
+	public void setRatings(List<Rate> ratings) {
+		this.ratings = ratings;
+	}
 
 	public List<User> getLikedBy() {
 		return likedBy;
