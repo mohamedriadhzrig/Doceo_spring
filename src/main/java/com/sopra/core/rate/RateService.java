@@ -10,5 +10,5 @@ Optional<Rate> findRateByUsernameInArticle(String username,String slug);
 	
 	void save(Rate rate);
 	
-	float findArticleRatings(String slug);
+	Double findArticleRatings(String slug);
 }

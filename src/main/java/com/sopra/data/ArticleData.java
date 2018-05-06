@@ -35,7 +35,7 @@ public class ArticleData {
 	private List<Tag> tagList;
 	@JsonProperty("author")
 	private ProfileData profileData;
-	private float rating;
+	private Double rating=0.0;
 
 	
 	public Long getId() {
@@ -94,9 +94,11 @@ public class ArticleData {
 		return fileType;
 	}
 
-	public float getRating() {
+	public Double getRating() {
 		return rating;
 	}
+
+	
 
 	
 }

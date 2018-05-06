@@ -23,10 +23,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.fasterxml.jackson.annotation.JsonRootName;
-
 import com.sopra.api.exception.InvalidRequestException;
-import com.sopra.api.exception.NoAuthorizationException;
-import com.sopra.api.exception.ResourceNotFoundException;
 import com.sopra.core.article.Article;
 import com.sopra.core.article.ArticleService;
 import com.sopra.core.rate.Rate;
@@ -51,7 +48,7 @@ public class ArticlesApi {
 
 	@Autowired
 	private RateService rateService;
-	
+
 	@Autowired
 	private UserService userService;
 
@@ -63,16 +60,20 @@ public class ArticlesApi {
 
 		Article article = articleService.findArticleBySlug(slug);
 		ProfileData profileData = new ProfileData();
-		profileData.setBio(article.getUser().getBio());
+		profileData.setBio(article.getUser().getBio() + "");
 		profileData.setUsername(article.getUser().getUsername());
 		profileData.setImage(article.getUser().getImage());
 		article.setSeen(article.getSeen());
-
+		User u=userService.findByUsername(user.getUsername()).get();
 		profileData.setFollowing(false);
-		float rating=rateService.findArticleRatings(slug);
-		
+
+		Double rating;
+		rating = rateService.findArticleRatings(slug);
+		if (rating == null) {
+				rating=0.0;
+		}
 		ArticleData articleData = new ArticleData(article.getId(), article.getSlug(), article.getTitle(),
-				article.getDescription(), article.getBody(), article.getFileType(), article.getSeen(), false, 1,
+				article.getDescription(), article.getBody(), article.getFileType(), article.getSeen(),article.getLikedBy().contains(u),article.getLikedBy().size(),
 				article.getCreatedAt(), article.getUpdatedAt(), article.getTags(), profileData, rating);
 		if (!(article.getUser().getUsername().equals(user.getUsername()))) {
 			article.setSeen(article.getSeen() + 1);
@@ -80,25 +81,26 @@ public class ArticlesApi {
 		}
 		return ResponseEntity.ok(articleResponse(articleData));
 	}
+
 	@PutMapping(value = "/{slug}")
-    public ResponseEntity<?> updateArticle(@PathVariable("slug") String slug,
-                                           @AuthenticationPrincipal User user,
-                                           @Valid @RequestBody UpdateArticleParam updateArticleParam) {
-        Article article= articleService.findArticleBySlug(slug);
-        		article.setTitle(updateArticleParam.getTitle());
-        		article.setDescription(updateArticleParam.getDescription());
-        		article.setBody(updateArticleParam.getBody());
-        		articleService.save(article);
-        		ProfileData profileData = new ProfileData();
-        		profileData.setBio(article.getUser().getBio());
-        		profileData.setUsername(article.getUser().getUsername());
-        		profileData.setImage(article.getUser().getImage());
-        		float rating=rateService.findArticleRatings(slug);
-        		ArticleData articleData = new ArticleData(article.getId(), article.getSlug(), article.getTitle(),
-        				article.getDescription(), article.getBody(), article.getFileType(), article.getSeen(), false, 1,
-        				article.getCreatedAt(), article.getUpdatedAt(), article.getTags(), profileData,rating);
-        		return ResponseEntity.ok(articleResponse(articleData));
-    }
+	public ResponseEntity<?> updateArticle(@PathVariable("slug") String slug, @AuthenticationPrincipal User user,
+			@Valid @RequestBody UpdateArticleParam updateArticleParam) {
+		Article article = articleService.findArticleBySlug(slug);
+		article.setTitle(updateArticleParam.getTitle());
+		article.setDescription(updateArticleParam.getDescription());
+		article.setBody(updateArticleParam.getBody());
+		articleService.save(article);
+		User u=userService.findByUsername(user.getUsername()).get();
+		ProfileData profileData = new ProfileData();
+		profileData.setBio(article.getUser().getBio());
+		profileData.setUsername(article.getUser().getUsername());
+		profileData.setImage(article.getUser().getImage());
+		Double rating = rateService.findArticleRatings(slug);
+		ArticleData articleData = new ArticleData(article.getId(), article.getSlug(), article.getTitle(),
+				article.getDescription(), article.getBody(), article.getFileType(), article.getSeen(), article.getLikedBy().contains(u), article.getLikedBy().size(),
+				article.getCreatedAt(), article.getUpdatedAt(), article.getTags(), profileData, rating);
+		return ResponseEntity.ok(articleResponse(articleData));
+	}
 
 	@PostMapping
 	public ResponseEntity createArticle(@Valid @RequestBody NewArticleParam newArticleParam,
@@ -134,10 +136,10 @@ public class ArticlesApi {
 				profileData.setImage(user.getImage());
 				profileData.setId(user.getId());
 				profileData.setFollowing(false);
-				float rating=rateService.findArticleRatings(article.getSlug());
+				
 				ArticleData articleData = new ArticleData(article.getId(), article.getSlug(), article.getTitle(),
 						article.getDescription(), article.getBody(), article.getFileType(), article.getSeen(), false, 1,
-						article.getCreatedAt(), article.getUpdatedAt(), article.getTags(), profileData,rating);
+						article.getCreatedAt(), article.getUpdatedAt(), article.getTags(), profileData, 0.0);
 				put("article", articleData);
 			}
 		});
@@ -176,10 +178,10 @@ public class ArticlesApi {
 		profileData.setImage(u.getImage());
 		profileData.setId(u.getId());
 		profileData.setFollowing(false);
-		float rating=rateService.findArticleRatings(article.getSlug());
+		Double rating = rateService.findArticleRatings(article.getSlug());
 		ArticleData articleData = new ArticleData(article.getId(), article.getSlug(), article.getTitle(),
 				article.getDescription(), article.getBody(), article.getFileType(), article.getSeen(), false, 1,
-				article.getCreatedAt(), article.getUpdatedAt(), article.getTags(), profileData,rating);
+				article.getCreatedAt(), article.getUpdatedAt(), article.getTags(), profileData, rating);
 		return responseArticleData(articleData);
 	}
 
@@ -197,26 +199,25 @@ public class ArticlesApi {
 		profileData.setImage(user.getImage());
 		profileData.setId(user.getId());
 		profileData.setFollowing(false);
-		float rating=rateService.findArticleRatings(article.getSlug());
+		Double rating = rateService.findArticleRatings(article.getSlug());
 		ArticleData articleData = new ArticleData(article.getId(), article.getSlug(), article.getTitle(),
 				article.getDescription(), article.getBody(), article.getFileType(), article.getSeen(), false, 1,
-				article.getCreatedAt(), article.getUpdatedAt(), article.getTags(), profileData,rating);
+				article.getCreatedAt(), article.getUpdatedAt(), article.getTags(), profileData, rating);
 		return responseArticleData(articleData);
 	}
-	
+
 	@PostMapping(value = "/{slug}/rate/{value}")
-	public ResponseEntity favoriteArticle(@PathVariable("slug") String slug,@PathVariable("value") float value, @AuthenticationPrincipal User user) {
+	public ResponseEntity favoriteArticle(@PathVariable("slug") String slug, @PathVariable("value") Double value,
+			@AuthenticationPrincipal User user) {
 		Article article = articleService.findArticleBySlug(slug);
 		User u = new User();
 		u = userService.findByUsername(user.getUsername()).get();
-		Optional<Rate> rate=rateService.findRateByUsernameInArticle(user.getUsername(), slug);
-		if(rate.isPresent())
-		{
+		Optional<Rate> rate = rateService.findRateByUsernameInArticle(user.getUsername(), slug);
+		if (rate.isPresent()) {
 			rate.get().setValue(value);
 			rateService.save(rate.get());
-		}else
-		{
-			Rate r=new Rate();
+		} else {
+			Rate r = new Rate();
 			r.setArticle(article);
 			r.setUser(u);
 			r.setValue(value);
@@ -224,7 +225,6 @@ public class ArticlesApi {
 			article.getRatings().add(r);
 			articleService.save(article);
 		}
-		
 
 		ProfileData profileData = new ProfileData();
 		profileData.setBio(u.getBio());
@@ -232,14 +232,13 @@ public class ArticlesApi {
 		profileData.setImage(u.getImage());
 		profileData.setId(u.getId());
 		profileData.setFollowing(false);
-		float rating=rateService.findArticleRatings(article.getSlug());
+		Double rating = rateService.findArticleRatings(article.getSlug());
 		ArticleData articleData = new ArticleData(article.getId(), article.getSlug(), article.getTitle(),
 				article.getDescription(), article.getBody(), article.getFileType(), article.getSeen(), false, 1,
-				article.getCreatedAt(), article.getUpdatedAt(), article.getTags(), profileData,rating);
+				article.getCreatedAt(), article.getUpdatedAt(), article.getTags(), profileData, rating);
 		return responseArticleData(articleData);
 	}
 
-	
 	private Map<String, Object> articleResponse(ArticleData articleData) {
 		return new HashMap<String, Object>() {
 			{
@@ -277,7 +276,7 @@ class NewArticleParam {
 @NoArgsConstructor
 @JsonRootName("article")
 class UpdateArticleParam {
-    private String title = "";
-    private String body = "";
-    private String description = "";
+	private String title = "";
+	private String body = "";
+	private String description = "";
 }

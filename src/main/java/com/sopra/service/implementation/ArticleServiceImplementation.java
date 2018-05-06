@@ -1,6 +1,7 @@
 package com.sopra.service.implementation;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -10,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.sopra.core.article.Article;
 import com.sopra.core.article.ArticleService;
+import com.sopra.core.rate.RateService;
 import com.sopra.core.tag.Tag;
 import com.sopra.core.tag.TagService;
 import com.sopra.core.user.User;
@@ -24,12 +26,17 @@ public class ArticleServiceImplementation implements ArticleService {
 
 	@Autowired
 	ArticleRepository articleRepository;
+	
+	
 
 	@Autowired
 	UserRepository userRepository;
 
 	@Autowired
 	TagService tagService;
+	
+	@Autowired
+	RateService rateService;
 
 	@Override
 	public void save(Article article) {
@@ -74,6 +81,12 @@ public class ArticleServiceImplementation implements ArticleService {
 			articleData.setUpdatedAt(a.getUpdatedAt());
 			articleData.setFavorited(a.getUser().getUsername() == user.getUsername() || a.getLikedBy().contains(user));
 			articleData.setFavoritesCount(a.getLikedBy().size());
+			Double rating;
+			rating = rateService.findArticleRatings(a.getSlug());
+			if (rating == null) {
+				rating=0.0;
+			}
+			articleData.setRating(rating);
 			ProfileData profileData = new ProfileData();
 			profileData.setId(a.getUser().getId());
 			profileData.setUsername(a.getUser().getUsername());
@@ -116,6 +129,12 @@ public class ArticleServiceImplementation implements ArticleService {
 			articleData.setUpdatedAt(a.getUpdatedAt());
 			articleData.setFavorited(a.getUser().getUsername() == user.getUsername() || a.getLikedBy().contains(user));
 			articleData.setFavoritesCount(a.getLikedBy().size());
+			Double rating;
+			rating = rateService.findArticleRatings(a.getSlug());
+			if (rating == null) {
+				rating=0.0;
+			}
+			articleData.setRating(rating);
 			ProfileData profileData = new ProfileData();
 			profileData.setId(a.getUser().getId());
 			profileData.setUsername(a.getUser().getUsername());
@@ -135,6 +154,7 @@ public class ArticleServiceImplementation implements ArticleService {
 	public ArticleDataList findFavoriteArticles(String uername, User user) {
 		List<Article> list = new ArrayList<Article>();
 		list.addAll(userRepository.findUserByUsername(uername).getFavoriteArticles());
+		Collections.sort(list, (o1, o2) -> o2.getCreatedAt().compareTo(o1.getCreatedAt()));
 		List<ArticleData> list1 = new ArrayList<ArticleData>();
 		for (Article a : list) {
 			ArticleData articleData = new ArticleData();
@@ -149,6 +169,12 @@ public class ArticleServiceImplementation implements ArticleService {
 			articleData.setUpdatedAt(a.getUpdatedAt());
 			articleData.setFavorited(a.getUser().getUsername() == user.getUsername() || a.getLikedBy().contains(user));
 			articleData.setFavoritesCount(a.getLikedBy().size());
+			Double rating;
+			rating = rateService.findArticleRatings(a.getSlug());
+			if (rating == null) {
+				rating=0.0;
+			}
+			articleData.setRating(rating);
 			ProfileData profileData = new ProfileData();
 			profileData.setId(a.getUser().getId());
 			profileData.setUsername(a.getUser().getUsername());
@@ -166,7 +192,7 @@ public class ArticleServiceImplementation implements ArticleService {
 	@Override
 	public ArticleDataList findAll(User user) {
 		List<Article> list = new ArrayList<Article>();
-		list.addAll(articleRepository.findAll());
+		list.addAll(articleRepository.findAllByOrderByCreatedAtDesc());
 		System.out.println("******"+list.size());
 		List<ArticleData> list1 = new ArrayList<ArticleData>();
 		for (Article a : list) {
@@ -182,6 +208,12 @@ public class ArticleServiceImplementation implements ArticleService {
 			articleData.setUpdatedAt(a.getUpdatedAt());
 			articleData.setFavorited(a.getUser().getUsername() == user.getUsername() || a.getLikedBy().contains(user));
 			articleData.setFavoritesCount(a.getLikedBy().size());
+			Double rating;
+			rating = rateService.findArticleRatings(a.getSlug());
+			if (rating == null) {
+				rating=0.0;
+			}
+			articleData.setRating(rating);
 			ProfileData profileData = new ProfileData();
 			profileData.setId(a.getUser().getId());
 			profileData.setUsername(a.getUser().getUsername());

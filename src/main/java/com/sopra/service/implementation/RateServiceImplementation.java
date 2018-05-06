@@ -35,7 +35,7 @@ public class RateServiceImplementation implements RateService {
 	}
 
 	@Override
-	public float findArticleRatings(String slug) {
+	public Double findArticleRatings(String slug) {
 		
 		return rateRepository.findArticleRating(slug);
 	}

@@ -1,6 +1,8 @@
 package com.sopra.service.implementation;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,6 +38,7 @@ public class CommentServiceImplementation implements CommentService {
 	public List<CommentData> findComments(Article article) {
 
 		List<Comment> comments = article.getComments();
+		Collections.sort(comments, (o1, o2) -> o2.getCreatedAt().compareTo(o1.getCreatedAt()));
 		List<CommentData> commentDatalist = new ArrayList<CommentData>();
 		for (Comment c : comments) {
 			CommentData commentData = new CommentData();
