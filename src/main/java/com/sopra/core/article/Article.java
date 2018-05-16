@@ -51,9 +51,9 @@ public class Article implements Serializable {
 	@ManyToMany(fetch = FetchType.LAZY, cascade = { CascadeType.PERSIST,
 			CascadeType.MERGE }, mappedBy = "favoriteArticles")
 	private List<User> likedBy = new ArrayList<User>();
-	@Temporal(TemporalType.TIMESTAMP)
+	@Temporal(TemporalType.DATE)
 	private Date createdAt = new Date();
-	@Temporal(TemporalType.TIMESTAMP)
+	@Temporal(TemporalType.DATE)
 	private Date validatedAt;
 	private String path;
 	private int seen = 0;

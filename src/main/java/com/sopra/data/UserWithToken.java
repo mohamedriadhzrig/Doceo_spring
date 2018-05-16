@@ -1,22 +1,29 @@
 package com.sopra.data;
 
-
-
-
 public class UserWithToken {
-    private String email;
-    private String username="try";
-    private String bio;
-    private String image;
-    private String token;
+	private String email;
+	private String username = "try";
+	private String bio;
+	private String image;
+	private String token;
+	private boolean admin;
 
-    public UserWithToken(UserData userData, String token) {
-        this.email = userData.getEmail();
-        this.username = userData.getUsername();
-        this.bio = userData.getBio();
-        this.image = userData.getImage();
-        this.token = token;
-    }
+	public UserWithToken(UserData userData, String token) {
+		this.email = userData.getEmail();
+		this.username = userData.getUsername();
+		this.bio = userData.getBio();
+		this.image = userData.getImage();
+		this.token = token;
+		this.admin = userData.isAdmin();
+	}
+
+	public boolean isAdmin() {
+		return admin;
+	}
+
+	public void setAdmin(boolean admin) {
+		this.admin = admin;
+	}
 
 	public String getEmail() {
 		return email;
@@ -57,6 +64,5 @@ public class UserWithToken {
 	public void setToken(String token) {
 		this.token = token;
 	}
-    
 
 }

@@ -1,7 +1,7 @@
 package com.sopra.core.user;
 
 import java.io.Serializable;
-import java.util.Collection;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.persistence.CascadeType;
@@ -17,7 +17,6 @@ import javax.persistence.ManyToMany;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -56,12 +55,12 @@ public class User implements UserDetails, Serializable {
 	@Column(name = "bio")
 	private String bio = "";
 
-	@OneToMany(mappedBy= "user")
+	@OneToMany(mappedBy = "user")
 	private List<Rate> rate;
-	
+
 	@ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	@JoinTable(name = "user_authority", joinColumns = @JoinColumn(name = "user_id", referencedColumnName = "id"), inverseJoinColumns = @JoinColumn(name = "authority_id", referencedColumnName = "id"))
-	private List<Authority> authorities;
+	private List<Authority> authorities = new ArrayList<Authority>();
 
 	@OneToMany(mappedBy = "user")
 	private List<Comment> comments;
@@ -205,7 +204,7 @@ public class User implements UserDetails, Serializable {
 	}
 
 	@Override
-	public Collection<? extends GrantedAuthority> getAuthorities() {
+	public List<Authority> getAuthorities() {
 		return this.authorities;
 	}
 

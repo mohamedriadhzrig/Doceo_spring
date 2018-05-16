@@ -13,7 +13,9 @@ public class UserData {
 	private String username;
 	private String bio;
 	private String image;
+	private boolean admin;
 
+	
 	public String getId() {
 		return id;
 	}
@@ -32,6 +34,10 @@ public class UserData {
 
 	public String getImage() {
 		return "http://localhost:8080/files/" + image;
+	}
+
+	public boolean isAdmin() {
+		return admin;
 	}
 
 }

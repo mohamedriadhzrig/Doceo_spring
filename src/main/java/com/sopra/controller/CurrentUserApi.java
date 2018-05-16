@@ -18,6 +18,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.sopra.api.exception.InvalidRequestException;
+import com.sopra.core.authority.Authority;
+import com.sopra.core.authority.AuthorityService;
 import com.sopra.core.user.User;
 import com.sopra.core.user.UserService;
 import com.sopra.core.utility.EncryptService;
@@ -37,14 +39,18 @@ public class CurrentUserApi {
 	private UserService userService;
 
 	@Autowired
+	private AuthorityService authorityService;
+
+	@Autowired
 	private EncryptService encryptService;
 
 	@GetMapping
 	public ResponseEntity currentUser(@AuthenticationPrincipal User currentUser,
 			@RequestHeader(value = "Authorization") String authorization) {
 		Optional<User> user = userService.findById(currentUser.getId());
+		Authority authority = authorityService.findAuthorityByName("ADMIN");
 		UserData userData = new UserData(null, user.get().getEmail(), user.get().getUsername(), user.get().getBio(),
-				user.get().getImage());
+				user.get().getImage(), user.get().getAuthorities().contains(authority));
 		return ResponseEntity.ok(userResponse(new UserWithToken(userData, authorization.split(" ")[1])));
 	}
 
@@ -55,7 +61,7 @@ public class CurrentUserApi {
 		if (bindingResult.hasErrors()) {
 			throw new InvalidRequestException(bindingResult);
 		}
-		
+
 		if (!updateUserParam.getPassword().equals(""))
 			currentUser.update(updateUserParam.getEmail(), updateUserParam.getUsername(),
 					encryptService.encrypt(updateUserParam.getPassword()), updateUserParam.getBio(),
@@ -70,8 +76,9 @@ public class CurrentUserApi {
 		}
 		userService.save(currentUser);
 		Optional<User> user = userService.findById(currentUser.getId());
+		Authority authority = authorityService.findAuthorityByName("ADMIN");
 		UserData userData = new UserData(null, user.get().getEmail(), user.get().getUsername(), user.get().getBio(),
-				user.get().getImage());
+				user.get().getImage(), user.get().getAuthorities().contains(authority));
 		return ResponseEntity.ok(userResponse(new UserWithToken(userData, token.split(" ")[1])));
 	}
 

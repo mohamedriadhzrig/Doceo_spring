@@ -17,11 +17,15 @@ public interface ArticleService {
 
 	ArticleDataList findArticles(String author, User user);
 
+	ArticleDataList findValidArticlesByUser(String author, User user);
+
 	ArticleDataList findArticlesByTag(String tag, User user);
 
 	ArticleDataList findFavoriteArticles(String uername, User user);
-	
-	ArticleDataList findAll(User user);
+
+	ArticleDataList findAllValide(User user);
+
+	ArticleDataList findAllInvalide();
 
 	Article findArticleBySlug(String slug);
 

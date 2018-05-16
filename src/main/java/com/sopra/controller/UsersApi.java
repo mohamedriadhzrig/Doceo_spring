@@ -19,6 +19,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.sopra.api.exception.InvalidRequestException;
+import com.sopra.core.authority.Authority;
+import com.sopra.core.authority.AuthorityService;
 import com.sopra.core.user.User;
 import com.sopra.core.user.UserService;
 import com.sopra.core.utility.EncryptService;
@@ -40,7 +42,9 @@ public class UsersApi {
 
 	@Autowired
 	private MailService mailService;
-
+	
+	@Autowired 
+	private AuthorityService authorityService;
 	
 	@Autowired
 	private EncryptService encryptService;
@@ -53,13 +57,16 @@ public class UsersApi {
 			System.out.println("Error ::: " + bindingResult.toString());
 			System.out.println(registerParam.toString());
 		}
-
+		
 		checkInput(registerParam, bindingResult);
 
 		User user = new User(registerParam.getEmail(), registerParam.getUsername(),
 				encryptService.encrypt(registerParam.getPassword()), "", "default.png");
+		Authority authority = new Authority();
+		authority=authorityService.findAuthorityByName("USER");
+		user.getAuthorities().add(authority);
 		userService.save(user);
-		UserData userData = new UserData(null, user.getEmail(), user.getUsername(), user.getBio(), user.getImage());
+		UserData userData = new UserData(null, user.getEmail(), user.getUsername(), user.getBio(), user.getImage(),false);
 		return ResponseEntity.status(201).body(userResponse(new UserWithToken(userData, jwtService.toToken(user))));
 	}
 
@@ -85,9 +92,19 @@ public class UsersApi {
 		Optional<User> optional = userService.findByEmail(loginParam.getEmail());
 		if (optional.isPresent() && encryptService.check(loginParam.getPassword(), optional.get().getPassword())) {
 			Optional<User> user = userService.findById(optional.get().getId());
-			UserData userData = new UserData(null, user.get().getEmail(), user.get().getUsername(), user.get().getBio(),
-					user.get().getImage());
-			return ResponseEntity.ok(userResponse(new UserWithToken(userData, jwtService.toToken(optional.get()))));
+			Authority authority= authorityService.findAuthorityByName("ADMIN");
+			if(user.get().getAuthorities().contains(authority)) {
+				UserData userData = new UserData(null, user.get().getEmail(), user.get().getUsername(), user.get().getBio(),
+						user.get().getImage(),true);
+				return ResponseEntity.ok(userResponse(new UserWithToken(userData, jwtService.toToken(optional.get()))));
+			}else
+			{
+				UserData userData = new UserData(null, user.get().getEmail(), user.get().getUsername(), user.get().getBio(),
+						user.get().getImage(),false);
+				return ResponseEntity.ok(userResponse(new UserWithToken(userData, jwtService.toToken(optional.get()))));
+			}
+			
+			
 		} else {
 			bindingResult.rejectValue("password", "INVALID", "invalid email or password");
 			throw new InvalidRequestException(bindingResult);

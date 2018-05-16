@@ -190,10 +190,10 @@ public class ArticleServiceImplementation implements ArticleService {
 	}
 
 	@Override
-	public ArticleDataList findAll(User user) {
+	public ArticleDataList findAllValide(User user) {
 		List<Article> list = new ArrayList<Article>();
-		list.addAll(articleRepository.findAllByOrderByCreatedAtDesc());
-		System.out.println("******"+list.size());
+		list.addAll(articleRepository.findValideArticle());
+		
 		List<ArticleData> list1 = new ArrayList<ArticleData>();
 		for (Article a : list) {
 			ArticleData articleData = new ArticleData();
@@ -224,10 +224,90 @@ public class ArticleServiceImplementation implements ArticleService {
 			list1.add(articleData);
 
 		}
+		
+		ArticleDataList articleDataList = new ArticleDataList(list1, list1.size());
+		return articleDataList;
+
+	}
+
+	@Override
+	public ArticleDataList findAllInvalide() {
+		List<Article> list = new ArrayList<Article>();
+		list.addAll(articleRepository.findAllInvalide());
+		
+		List<ArticleData> list1 = new ArrayList<ArticleData>();
+		for (Article a : list) {
+			ArticleData articleData = new ArticleData();
+			articleData.setSeen(a.getSeen());
+			articleData.setId(a.getId());
+			articleData.setBody(a.getBody());
+			articleData.setCreatedAt(a.getCreatedAt());
+			articleData.setDescription(a.getDescription());
+			articleData.setSlug(a.getSlug());
+			articleData.setTitle(a.getTitle());
+			articleData.setTagList(a.getTags());
+			articleData.setUpdatedAt(a.getUpdatedAt());
+			articleData.setFavorited(false);
+			articleData.setFavoritesCount(a.getLikedBy().size());
+			Double rating;
+			rating = rateService.findArticleRatings(a.getSlug());
+			if (rating == null) {
+				rating=0.0;
+			}
+			articleData.setRating(rating);
+			ProfileData profileData = new ProfileData();
+			profileData.setId(a.getUser().getId());
+			profileData.setUsername(a.getUser().getUsername());
+			profileData.setImage(a.getUser().getImage());
+			profileData.setFollowing(false);
+			profileData.setBio(a.getUser().getBio());
+			articleData.setProfileData(profileData);
+			list1.add(articleData);
+
+		}
 		System.out.println(list1.size()+"******"+list.size());
 		ArticleDataList articleDataList = new ArticleDataList(list1, list1.size());
 		return articleDataList;
 
+	}
+
+	@Override
+	public ArticleDataList findValidArticlesByUser(String author, User user) {
+		List<Article> list = new ArrayList<Article>();
+		list.addAll(articleRepository.findValidArticlesByUser(author));
+		List<ArticleData> list1 = new ArrayList<ArticleData>();
+		for (Article a : list) {
+			ArticleData articleData = new ArticleData();
+			articleData.setSeen(a.getSeen());
+			articleData.setId(a.getId());
+			articleData.setBody(a.getBody());
+			articleData.setCreatedAt(a.getCreatedAt());
+			articleData.setDescription(a.getDescription());
+			articleData.setSlug(a.getSlug());
+			articleData.setTitle(a.getTitle());
+			articleData.setTagList(a.getTags());
+			articleData.setUpdatedAt(a.getUpdatedAt());
+			articleData.setFavorited(a.getUser().getUsername() == user.getUsername() || a.getLikedBy().contains(user));
+			articleData.setFavoritesCount(a.getLikedBy().size());
+			Double rating;
+			rating = rateService.findArticleRatings(a.getSlug());
+			if (rating == null) {
+				rating=0.0;
+			}
+			articleData.setRating(rating);
+			ProfileData profileData = new ProfileData();
+			profileData.setId(a.getUser().getId());
+			profileData.setUsername(a.getUser().getUsername());
+			profileData.setImage(a.getUser().getImage());
+			profileData.setFollowing(false);
+			profileData.setBio(a.getUser().getBio());
+			articleData.setProfileData(profileData);
+			list1.add(articleData);
+
+		}
+
+		ArticleDataList articleDataList = new ArticleDataList(list1, list1.size());
+		return articleDataList;
 	}
 
 }

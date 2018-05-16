@@ -18,11 +18,20 @@ public interface ArticleRepository extends JpaRepository<Article, Long> {
 
 	@Query("select a from Article a where (a.user.username is null or a.user.username='' or a.user.username = :author) order by a.createdAt desc")
 	List<Article> findArticles(@Param("author") String author);
+	
+	@Query("select a from Article a where (a.user.username = :author and a.statut = 'valide') order by a.createdAt desc")
+	List<Article> findValidArticlesByUser(@Param("author") String author);
 
 	Article findArticleBySlug(String slug);
 
-	@Query("select a from Article a,Tag t where (:tag is null  or( a MEMBER OF t.articles AND t = :tag))  order by a.createdAt desc ")
+	@Query("select a from Article a,Tag t where (:tag is null  or( a MEMBER OF t.articles AND t = :tag) AND a.statut = 'valide')  order by a.createdAt desc ")
 	List<Article> findArticlesByTag(@Param("tag") Tag tag);
+	
+	@Query("select a from Article a where a.statut = 'valide' order by a.createdAt desc")
+	List<Article> findValideArticle();
+	
+	@Query("select a from Article a where (a.statut != 'valide' )order by a.createdAt asc")
+	List<Article> findAllInvalide();
 	
 	List<Article> findAllByOrderByCreatedAtDesc();
 }

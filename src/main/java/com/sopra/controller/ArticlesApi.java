@@ -1,5 +1,7 @@
 package com.sopra.controller;
 
+import java.text.DecimalFormat;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,6 +26,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.fasterxml.jackson.annotation.JsonRootName;
 import com.sopra.api.exception.InvalidRequestException;
+import com.sopra.api.exception.NoAuthorizationException;
+import com.sopra.api.exception.ResourceNotFoundException;
 import com.sopra.core.article.Article;
 import com.sopra.core.article.ArticleService;
 import com.sopra.core.rate.Rate;
@@ -72,16 +76,26 @@ public class ArticlesApi {
 		if (rating == null) {
 				rating=0.0;
 		}
+		DecimalFormat oneDigit = new DecimalFormat("#,##0.0");
+		
 		ArticleData articleData = new ArticleData(article.getId(), article.getSlug(), article.getTitle(),
 				article.getDescription(), article.getBody(), article.getFileType(), article.getSeen(),article.getLikedBy().contains(u),article.getLikedBy().size(),
-				article.getCreatedAt(), article.getUpdatedAt(), article.getTags(), profileData, rating);
+				article.getCreatedAt(), article.getUpdatedAt(), article.getTags(), profileData, Double.valueOf(oneDigit.format(rating)));
 		if (!(article.getUser().getUsername().equals(user.getUsername()))) {
 			article.setSeen(article.getSeen() + 1);
 			articleService.save(article);
 		}
 		return ResponseEntity.ok(articleResponse(articleData));
 	}
-
+	@DeleteMapping(value = "/{slug}")
+    public ResponseEntity deleteArticle(@PathVariable("slug") String slug,
+                                        @AuthenticationPrincipal User user) {
+        Article article= articleService.findArticleBySlug(slug);
+        		articleService.remove(article);
+            return ResponseEntity.noContent().build();
+        
+    }
+	
 	@PutMapping(value = "/{slug}")
 	public ResponseEntity<?> updateArticle(@PathVariable("slug") String slug, @AuthenticationPrincipal User user,
 			@Valid @RequestBody UpdateArticleParam updateArticleParam) {
@@ -96,10 +110,20 @@ public class ArticlesApi {
 		profileData.setUsername(article.getUser().getUsername());
 		profileData.setImage(article.getUser().getImage());
 		Double rating = rateService.findArticleRatings(slug);
+		DecimalFormat oneDigit = new DecimalFormat("#,##0.0");
 		ArticleData articleData = new ArticleData(article.getId(), article.getSlug(), article.getTitle(),
 				article.getDescription(), article.getBody(), article.getFileType(), article.getSeen(), article.getLikedBy().contains(u), article.getLikedBy().size(),
-				article.getCreatedAt(), article.getUpdatedAt(), article.getTags(), profileData, rating);
+				article.getCreatedAt(), article.getUpdatedAt(), article.getTags(), profileData, Double.valueOf(oneDigit.format(rating)));
 		return ResponseEntity.ok(articleResponse(articleData));
+	}
+	@PutMapping(value = "/{slug}/validate")
+	public void validateArticle(@PathVariable("slug") String slug, @AuthenticationPrincipal User user) {
+		Article article = articleService.findArticleBySlug(slug);
+		article.setStatut("valide");
+		article.setValidatedAt(new Date());
+		articleService.save(article);
+
+		
 	}
 
 	@PostMapping
@@ -112,6 +136,7 @@ public class ArticlesApi {
 		Article article = new Article(newArticleParam.getTitle(), newArticleParam.getDescription(),
 				newArticleParam.getBody(), user);
 		article.setFileType(newArticleParam.getFileType());
+		article.setStatut("invalide");
 		for (String t : newArticleParam.getTagList()) {
 			Optional<Tag> existingTag = tagService.findTagByName(t);
 			if (!existingTag.isPresent()) {
@@ -150,7 +175,8 @@ public class ArticlesApi {
 			@RequestParam(value = "limit", defaultValue = "20") int limit,
 			@RequestParam(value = "tag", required = false) String tag,
 			@RequestParam(value = "favorited", required = false) String favoritedBy,
-			@RequestParam(value = "author", required = false) String author, @AuthenticationPrincipal User user) {
+			@RequestParam(value = "author", required = false) String author,
+			@RequestParam(value = "admin", required = false) boolean admin,@AuthenticationPrincipal User user) {
 		User u = userService.findByUsername(user.getUsername()).get();
 		if (!(favoritedBy == null))
 			return ResponseEntity.ok(articleService.findFavoriteArticles(favoritedBy, u));
@@ -158,10 +184,24 @@ public class ArticlesApi {
 		if (!(tag == null))
 			return ResponseEntity.ok(articleService.findArticlesByTag(tag, u));
 
-		if (!(author == null))
+		if (!(author == null)) {
+			if(author==u.getUsername())
 			return ResponseEntity.ok(articleService.findArticles(author, u));
+			else
+				return ResponseEntity.ok(articleService.findValidArticlesByUser(author, u));
+		}
+		if (admin)
+			return ResponseEntity.ok(articleService.findAllInvalide());
+		
 
-		return ResponseEntity.ok(articleService.findAll(u));
+		return ResponseEntity.ok(articleService.findAllValide(u));
+	}
+	
+	@GetMapping(value = "/invalide/admin")
+	public ResponseEntity invalideArticle( @AuthenticationPrincipal User user) {
+
+		
+		return ResponseEntity.ok(articleService.findAllInvalide());
 	}
 
 	@PostMapping(value = "/{slug}/favorite")
@@ -178,10 +218,14 @@ public class ArticlesApi {
 		profileData.setImage(u.getImage());
 		profileData.setId(u.getId());
 		profileData.setFollowing(false);
+		DecimalFormat oneDigit = new DecimalFormat("#,##0.0");
 		Double rating = rateService.findArticleRatings(article.getSlug());
+		if (rating == null) {
+			rating=0.0;
+	}
 		ArticleData articleData = new ArticleData(article.getId(), article.getSlug(), article.getTitle(),
 				article.getDescription(), article.getBody(), article.getFileType(), article.getSeen(), false, 1,
-				article.getCreatedAt(), article.getUpdatedAt(), article.getTags(), profileData, rating);
+				article.getCreatedAt(), article.getUpdatedAt(), article.getTags(), profileData, Double.valueOf(oneDigit.format(rating)));
 		return responseArticleData(articleData);
 	}
 
@@ -199,10 +243,15 @@ public class ArticlesApi {
 		profileData.setImage(user.getImage());
 		profileData.setId(user.getId());
 		profileData.setFollowing(false);
+		DecimalFormat oneDigit = new DecimalFormat("#,##0.0");
 		Double rating = rateService.findArticleRatings(article.getSlug());
+		if (rating == null) {
+			rating=0.0;
+	}
 		ArticleData articleData = new ArticleData(article.getId(), article.getSlug(), article.getTitle(),
 				article.getDescription(), article.getBody(), article.getFileType(), article.getSeen(), false, 1,
-				article.getCreatedAt(), article.getUpdatedAt(), article.getTags(), profileData, rating);
+				article.getCreatedAt(), article.getUpdatedAt(), article.getTags(), profileData,
+				Double.valueOf(oneDigit.format(rating)));
 		return responseArticleData(articleData);
 	}
 
@@ -232,10 +281,11 @@ public class ArticlesApi {
 		profileData.setImage(u.getImage());
 		profileData.setId(u.getId());
 		profileData.setFollowing(false);
+		DecimalFormat oneDigit = new DecimalFormat("#,##0.0");
 		Double rating = rateService.findArticleRatings(article.getSlug());
 		ArticleData articleData = new ArticleData(article.getId(), article.getSlug(), article.getTitle(),
 				article.getDescription(), article.getBody(), article.getFileType(), article.getSeen(), false, 1,
-				article.getCreatedAt(), article.getUpdatedAt(), article.getTags(), profileData, rating);
+				article.getCreatedAt(), article.getUpdatedAt(), article.getTags(), profileData, Double.valueOf(oneDigit.format(rating)));
 		return responseArticleData(articleData);
 	}
 

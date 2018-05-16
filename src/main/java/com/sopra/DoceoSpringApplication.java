@@ -2,12 +2,15 @@ package com.sopra;
 
 import javax.annotation.Resource;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
+import com.sopra.core.authority.Authority;
+import com.sopra.core.authority.AuthorityService;
 import com.sopra.core.utility.StorageService;
 
 @SpringBootApplication
@@ -28,7 +31,8 @@ public class DoceoSpringApplication implements CommandLineRunner {
 	public static void main(String[] args) {
 		SpringApplication.run(DoceoSpringApplication.class, args);
 	}
-
+	@Autowired
+	AuthorityService authorityService;
 	@Bean
 	public BCryptPasswordEncoder getBCPE() {
 		return new BCryptPasswordEncoder();
@@ -36,6 +40,10 @@ public class DoceoSpringApplication implements CommandLineRunner {
 
 	@Override
 	public void run(String... arg0) throws Exception {
+		/*Authority user = new Authority("USER");
+		Authority admin = new Authority("ADMIN");
+		authorityService.save(user);
+		authorityService.save(admin);*/
 		// storageService.deleteAll();
 		// storageService.init();
 	}
