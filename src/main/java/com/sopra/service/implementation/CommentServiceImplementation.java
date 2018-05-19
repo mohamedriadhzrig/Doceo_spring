@@ -2,7 +2,6 @@ package com.sopra.service.implementation;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,9 +14,6 @@ import com.sopra.core.comment.CommentService;
 import com.sopra.data.CommentData;
 import com.sopra.data.ProfileData;
 import com.sopra.repositories.CommentRepository;
-
-
-
 
 @Service
 public class CommentServiceImplementation implements CommentService {
@@ -51,7 +47,7 @@ public class CommentServiceImplementation implements CommentService {
 			profileData.setId(c.getUser().getId());
 			profileData.setUsername(c.getUser().getUsername());
 			profileData.setImage(c.getUser().getImage());
-			profileData.setFollowing(false);
+			profileData.setAdmin(false);
 			profileData.setBio(c.getUser().getBio());
 			commentData.setProfileData(profileData);
 			commentDatalist.add(commentData);

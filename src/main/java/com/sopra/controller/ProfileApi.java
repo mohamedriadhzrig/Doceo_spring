@@ -9,8 +9,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.sopra.core.authority.Authority;
+import com.sopra.core.authority.AuthorityService;
 import com.sopra.core.user.User;
 import com.sopra.core.user.UserService;
 import com.sopra.data.ProfileData;
@@ -20,14 +23,56 @@ public class ProfileApi {
 	@Autowired
 	private UserService userService;
 
+	@Autowired
+	private AuthorityService authorityService;
+
 	@GetMapping("profiles/{username}")
 	public ResponseEntity getProfile(@PathVariable("username") String username, @AuthenticationPrincipal User user) {
 
+		Authority authority = authorityService.findAuthorityByName("ADMIN");
 		Optional<User> profile = userService.findByUsername(username);
 		ProfileData profileData = new ProfileData(profile.get().getId(), profile.get().getUsername(),
-				profile.get().getBio(), profile.get().getImage(), false);
+				profile.get().getBio(), profile.get().getImage(), profile.get().getAuthorities().contains(authority));
 		return ResponseEntity.ok(profileResponse(profileData));
 
+	}
+
+	@PostMapping(value = "profiles/{username}/upgrade")
+	public ResponseEntity upgradeUserToAdmin(@PathVariable("username") String username,
+			@AuthenticationPrincipal User user) {
+		Authority authority = authorityService.findAuthorityByName("ADMIN");
+		User u = new User();
+		u = userService.findByUsername(username).get();
+		if (!u.getAuthorities().contains(authority)) {
+			u.getAuthorities().add(authority);
+			userService.save(u);
+		}
+		ProfileData profileData = new ProfileData();
+		profileData.setBio(u.getBio());
+		profileData.setUsername(u.getUsername());
+		profileData.setImage(u.getImage());
+		profileData.setId(u.getId());
+		profileData.setAdmin(true);
+		return ResponseEntity.ok(profileResponse(profileData));
+	}
+
+	@PostMapping(value = "profiles/{username}/downgrade")
+	public ResponseEntity downgradeUserToAdmin(@PathVariable("username") String username,
+			@AuthenticationPrincipal User user) {
+		Authority authority = authorityService.findAuthorityByName("ADMIN");
+		User u = new User();
+		u = userService.findByUsername(username).get();
+		if (u.getAuthorities().contains(authority)) {
+			u.getAuthorities().remove(authority);
+			userService.save(u);
+		}
+		ProfileData profileData = new ProfileData();
+		profileData.setBio(u.getBio());
+		profileData.setUsername(u.getUsername());
+		profileData.setImage(u.getImage());
+		profileData.setId(u.getId());
+		profileData.setAdmin(false);
+		return ResponseEntity.ok(profileResponse(profileData));
 	}
 
 	/*

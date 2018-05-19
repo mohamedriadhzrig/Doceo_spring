@@ -1,7 +1,9 @@
 package com.sopra.service.implementation;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -15,26 +17,26 @@ import com.sopra.core.rate.RateService;
 import com.sopra.core.tag.Tag;
 import com.sopra.core.tag.TagService;
 import com.sopra.core.user.User;
+import com.sopra.data.AdminArticleDataList;
 import com.sopra.data.ArticleData;
 import com.sopra.data.ArticleDataList;
 import com.sopra.data.ProfileData;
 import com.sopra.repositories.ArticleRepository;
 import com.sopra.repositories.UserRepository;
+
 @Transactional
 @Service
 public class ArticleServiceImplementation implements ArticleService {
 
 	@Autowired
 	ArticleRepository articleRepository;
-	
-	
 
 	@Autowired
 	UserRepository userRepository;
 
 	@Autowired
 	TagService tagService;
-	
+
 	@Autowired
 	RateService rateService;
 
@@ -59,6 +61,21 @@ public class ArticleServiceImplementation implements ArticleService {
 	@Override
 	public void remove(Article article) {
 		articleRepository.delete(article);
+		/*
+		 * System.out.println("*****1****"); for (Tag t : article.getTags()) {
+		 * System.out.println(t.getArticles().size() + "*****2****" + t.getName());
+		 * 
+		 * if (t.getArticles().size() == 1) { System.out.println("*****3****" +
+		 * t.getArticles().size()); Tag tag =
+		 * tagService.findTagByName(t.getName()).get(); tagService.remove(tag);
+		 * 
+		 * } System.out.println("*****4****");
+		 * 
+		 * } System.out.println("*****5****");
+		 * 
+		 * 
+		 * System.out.println("*****6****");
+		 */
 
 	}
 
@@ -84,14 +101,14 @@ public class ArticleServiceImplementation implements ArticleService {
 			Double rating;
 			rating = rateService.findArticleRatings(a.getSlug());
 			if (rating == null) {
-				rating=0.0;
+				rating = 0.0;
 			}
 			articleData.setRating(rating);
 			ProfileData profileData = new ProfileData();
 			profileData.setId(a.getUser().getId());
 			profileData.setUsername(a.getUser().getUsername());
 			profileData.setImage(a.getUser().getImage());
-			profileData.setFollowing(false);
+			profileData.setAdmin(false);
 			profileData.setBio(a.getUser().getBio());
 			articleData.setProfileData(profileData);
 			list1.add(articleData);
@@ -132,14 +149,14 @@ public class ArticleServiceImplementation implements ArticleService {
 			Double rating;
 			rating = rateService.findArticleRatings(a.getSlug());
 			if (rating == null) {
-				rating=0.0;
+				rating = 0.0;
 			}
 			articleData.setRating(rating);
 			ProfileData profileData = new ProfileData();
 			profileData.setId(a.getUser().getId());
 			profileData.setUsername(a.getUser().getUsername());
 			profileData.setImage(a.getUser().getImage());
-			profileData.setFollowing(false);
+			profileData.setAdmin(false);
 			profileData.setBio(a.getUser().getBio());
 			articleData.setProfileData(profileData);
 			list1.add(articleData);
@@ -172,14 +189,14 @@ public class ArticleServiceImplementation implements ArticleService {
 			Double rating;
 			rating = rateService.findArticleRatings(a.getSlug());
 			if (rating == null) {
-				rating=0.0;
+				rating = 0.0;
 			}
 			articleData.setRating(rating);
 			ProfileData profileData = new ProfileData();
 			profileData.setId(a.getUser().getId());
 			profileData.setUsername(a.getUser().getUsername());
 			profileData.setImage(a.getUser().getImage());
-			profileData.setFollowing(false);
+			profileData.setAdmin(false);
 			profileData.setBio(a.getUser().getBio());
 			articleData.setProfileData(profileData);
 			list1.add(articleData);
@@ -193,7 +210,7 @@ public class ArticleServiceImplementation implements ArticleService {
 	public ArticleDataList findAllValide(User user) {
 		List<Article> list = new ArrayList<Article>();
 		list.addAll(articleRepository.findValideArticle());
-		
+
 		List<ArticleData> list1 = new ArrayList<ArticleData>();
 		for (Article a : list) {
 			ArticleData articleData = new ArticleData();
@@ -211,30 +228,30 @@ public class ArticleServiceImplementation implements ArticleService {
 			Double rating;
 			rating = rateService.findArticleRatings(a.getSlug());
 			if (rating == null) {
-				rating=0.0;
+				rating = 0.0;
 			}
 			articleData.setRating(rating);
 			ProfileData profileData = new ProfileData();
 			profileData.setId(a.getUser().getId());
 			profileData.setUsername(a.getUser().getUsername());
 			profileData.setImage(a.getUser().getImage());
-			profileData.setFollowing(false);
+			profileData.setAdmin(false);
 			profileData.setBio(a.getUser().getBio());
 			articleData.setProfileData(profileData);
 			list1.add(articleData);
 
 		}
-		
+
 		ArticleDataList articleDataList = new ArticleDataList(list1, list1.size());
 		return articleDataList;
 
 	}
 
 	@Override
-	public ArticleDataList findAllInvalide() {
+	public AdminArticleDataList findAllInvalide() {
 		List<Article> list = new ArrayList<Article>();
 		list.addAll(articleRepository.findAllInvalide());
-		
+
 		List<ArticleData> list1 = new ArrayList<ArticleData>();
 		for (Article a : list) {
 			ArticleData articleData = new ArticleData();
@@ -252,21 +269,28 @@ public class ArticleServiceImplementation implements ArticleService {
 			Double rating;
 			rating = rateService.findArticleRatings(a.getSlug());
 			if (rating == null) {
-				rating=0.0;
+				rating = 0.0;
 			}
 			articleData.setRating(rating);
 			ProfileData profileData = new ProfileData();
 			profileData.setId(a.getUser().getId());
 			profileData.setUsername(a.getUser().getUsername());
 			profileData.setImage(a.getUser().getImage());
-			profileData.setFollowing(false);
+			profileData.setAdmin(false);
 			profileData.setBio(a.getUser().getBio());
 			articleData.setProfileData(profileData);
 			list1.add(articleData);
 
 		}
-		System.out.println(list1.size()+"******"+list.size());
-		ArticleDataList articleDataList = new ArticleDataList(list1, list1.size());
+
+		Date date1 = new Date();
+
+		Calendar c = Calendar.getInstance();
+		c.setTime(date1);
+		c.add(Calendar.DATE, -7);
+		Date date2 = c.getTime();
+		AdminArticleDataList articleDataList = new AdminArticleDataList(list1, list1.size(), articleRepository.count(),
+				articleRepository.countByCreatedAtBetween(date2, date1));
 		return articleDataList;
 
 	}
@@ -292,14 +316,14 @@ public class ArticleServiceImplementation implements ArticleService {
 			Double rating;
 			rating = rateService.findArticleRatings(a.getSlug());
 			if (rating == null) {
-				rating=0.0;
+				rating = 0.0;
 			}
 			articleData.setRating(rating);
 			ProfileData profileData = new ProfileData();
 			profileData.setId(a.getUser().getId());
 			profileData.setUsername(a.getUser().getUsername());
 			profileData.setImage(a.getUser().getImage());
-			profileData.setFollowing(false);
+			profileData.setAdmin(false);
 			profileData.setBio(a.getUser().getBio());
 			articleData.setProfileData(profileData);
 			list1.add(articleData);

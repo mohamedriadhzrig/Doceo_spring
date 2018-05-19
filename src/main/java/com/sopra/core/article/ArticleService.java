@@ -3,6 +3,7 @@ package com.sopra.core.article;
 import java.util.Optional;
 
 import com.sopra.core.user.User;
+import com.sopra.data.AdminArticleDataList;
 import com.sopra.data.ArticleDataList;
 
 public interface ArticleService {
@@ -25,7 +26,7 @@ public interface ArticleService {
 
 	ArticleDataList findAllValide(User user);
 
-	ArticleDataList findAllInvalide();
+	AdminArticleDataList findAllInvalide();
 
 	Article findArticleBySlug(String slug);
 

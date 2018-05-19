@@ -3,7 +3,6 @@ package com.sopra.data;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import lombok.AllArgsConstructor;
-import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
@@ -16,22 +15,26 @@ public class ProfileData {
 	private String username;
 	private String bio;
 	private String image;
-	private boolean following;
+	private boolean admin;
+
 	public Long getId() {
 		return id;
 	}
+
 	public String getUsername() {
 		return username;
 	}
+
 	public String getBio() {
 		return bio;
 	}
+
 	public String getImage() {
-		return "http://localhost:8080/files/"+image;
+		return "http://localhost:8080/files/" + image;
 	}
-	public boolean isFollowing() {
-		return following;
+
+	public boolean getAdmin() {
+		return admin;
 	}
-	
-	
+
 }

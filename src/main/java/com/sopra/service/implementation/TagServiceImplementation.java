@@ -39,4 +39,10 @@ public class TagServiceImplementation implements TagService {
 		return listTag;
 	}
 
+	@Override
+	public void remove(Tag tag) {
+		tagRepository.delete(tag);
+
+	}
+
 }

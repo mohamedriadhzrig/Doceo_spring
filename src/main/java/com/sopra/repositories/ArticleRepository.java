@@ -1,5 +1,6 @@
 package com.sopra.repositories;
 
+import java.util.Date;
 import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -34,6 +35,8 @@ public interface ArticleRepository extends JpaRepository<Article, Long> {
 	List<Article> findAllInvalide();
 	
 	List<Article> findAllByOrderByCreatedAtDesc();
+	
+	Long countByCreatedAtBetween(Date date1,Date date2);
 }
 
 // (a.tag is null or a.tag.name = :tag) and Select a from article a, tag t where

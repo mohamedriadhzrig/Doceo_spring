@@ -7,7 +7,6 @@ import java.util.Date;
 import java.util.List;
 
 import javax.persistence.CascadeType;
-import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
@@ -17,7 +16,6 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
-import javax.validation.constraints.Size;
 
 import org.hibernate.annotations.Type;
 import org.passay.CharacterRule;
@@ -40,11 +38,11 @@ public class Article implements Serializable {
 	private String title;
 	private String category;
 	private String description;
-	@Type(type="text")
+	@Type(type = "text")
 	private String body;
 	private String fileType;
 
-	@ManyToMany(fetch = FetchType.LAZY, cascade = { CascadeType.PERSIST, CascadeType.MERGE })
+	@ManyToMany(fetch = FetchType.LAZY, cascade = { CascadeType.PERSIST, CascadeType.MERGE, CascadeType.DETACH })
 
 	@JsonIgnore
 	private List<Tag> tags = new ArrayList<Tag>();
@@ -61,14 +59,13 @@ public class Article implements Serializable {
 	@ManyToOne
 	private User user;
 
-	@OneToMany(mappedBy = "article")
+	@OneToMany(mappedBy = "article", cascade = CascadeType.REMOVE, orphanRemoval = true)
+
 	private List<Comment> comments;
 
-	
 	@OneToMany(mappedBy = "article")
-	private List<Rate> ratings= new ArrayList<Rate>();
-	
-	
+	private List<Rate> ratings = new ArrayList<Rate>();
+
 	public List<Rate> getRatings() {
 		return ratings;
 	}
@@ -100,8 +97,7 @@ public class Article implements Serializable {
 	public void setComments(List<Comment> comments) {
 		this.comments = comments;
 	}
-	
-	
+
 	public String getFileType() {
 		return fileType;
 	}

@@ -2,8 +2,12 @@ package com.sopra.core.user;
 
 import java.util.Optional;
 
+import com.sopra.data.AdminUserDataList;
+
 public interface UserService {
 	void save(User user);
+
+	AdminUserDataList findAll();
 
 	Optional<User> findById(Long id);
 
