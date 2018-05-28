@@ -45,4 +45,10 @@ public class TagServiceImplementation implements TagService {
 
 	}
 
+	@Override
+	public List<Tag> findAllTagsOrderByName() {
+		
+		return tagRepository.findAllOrderByNameAsk();
+	}
+
 }

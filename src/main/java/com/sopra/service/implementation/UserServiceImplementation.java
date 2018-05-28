@@ -27,8 +27,8 @@ public class UserServiceImplementation implements UserService {
 	AuthorityRepository authorityRepository;
 
 	@Override
-	public void save(User user) {
-		userRepository.save(user);
+	public User save(User user) {
+		return  userRepository.save(user);
 	}
 
 	@Override
@@ -68,7 +68,7 @@ public class UserServiceImplementation implements UserService {
 			UserDetails u = new UserDetails();
 			u.setUsername(x.getUsername());
 			u.setEmail(x.getEmail());
-
+			u.setTeam(x.getTeam().getName());
 			u.setArticleCount((long) x.getArticles().size());
 
 			u.setCommentCount((long) x.getComments().size());

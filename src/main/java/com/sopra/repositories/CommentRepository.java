@@ -6,4 +6,7 @@ import com.sopra.core.comment.Comment;
 
 public interface CommentRepository extends JpaRepository<Comment, Long>{
 
+	Comment findCommentById(Long id);
+	
+	Comment save(Comment comment);
 }

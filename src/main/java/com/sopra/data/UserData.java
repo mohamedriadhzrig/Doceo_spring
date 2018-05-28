@@ -11,10 +11,12 @@ public class UserData {
 	private String id;
 	private String email;
 	private String username;
-	private String bio;
+	private String position;
 	private String image;
+	private String team;
 	private boolean admin;
 
+	
 	
 	public String getId() {
 		return id;
@@ -28,8 +30,8 @@ public class UserData {
 		return username;
 	}
 
-	public String getBio() {
-		return bio;
+	public String getPosition() {
+		return position;
 	}
 
 	public String getImage() {
@@ -38,6 +40,20 @@ public class UserData {
 
 	public boolean isAdmin() {
 		return admin;
+	}
+
+	public String getTeam() {
+		return team;
+	}
+
+	public UserData(String id, String email, String username, String bio, String image, boolean admin) {
+		super();
+		this.id = id;
+		this.email = email;
+		this.username = username;
+		this.position = bio;
+		this.image = image;
+		this.admin = admin;
 	}
 
 }

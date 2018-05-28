@@ -11,6 +11,8 @@ import com.sopra.core.user.User;
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
 
+	User save(User user);
+
 	User findUserByEmail(String email);
 
 	User findUserByUsername(String username);

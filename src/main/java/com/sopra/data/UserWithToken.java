@@ -3,17 +3,19 @@ package com.sopra.data;
 public class UserWithToken {
 	private String email;
 	private String username = "try";
-	private String bio;
+	private String position;
 	private String image;
 	private String token;
+	private String team;
 	private boolean admin;
 
 	public UserWithToken(UserData userData, String token) {
 		this.email = userData.getEmail();
 		this.username = userData.getUsername();
-		this.bio = userData.getBio();
+		this.position = userData.getPosition();
 		this.image = userData.getImage();
 		this.token = token;
+		this.team = userData.getTeam();
 		this.admin = userData.isAdmin();
 	}
 
@@ -42,11 +44,11 @@ public class UserWithToken {
 	}
 
 	public String getBio() {
-		return bio;
+		return position;
 	}
 
 	public void setBio(String bio) {
-		this.bio = bio;
+		this.position = bio;
 	}
 
 	public String getImage() {
@@ -65,4 +67,20 @@ public class UserWithToken {
 		this.token = token;
 	}
 
+	public String getPosition() {
+		return position;
+	}
+
+	public void setPosition(String position) {
+		this.position = position;
+	}
+
+	public String getTeam() {
+		return team;
+	}
+
+	public void setTeam(String team) {
+		this.team = team;
+	}
+	
 }

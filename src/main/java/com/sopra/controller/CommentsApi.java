@@ -17,9 +17,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
-
-import com.fasterxml.jackson.annotation.JsonRootName;
 
 import com.sopra.api.exception.InvalidRequestException;
 import com.sopra.core.article.Article;
@@ -53,55 +52,40 @@ public class CommentsApi {
 		Comment comment = new Comment();
 		comment.setBody(newCommentParam.getBody());
 		comment.setArticle(article);
-		commentService.save(comment);
+		Comment com = commentService.saveAndReturn(comment);
 		comment.setUser(user);
 		article.getComments().add(comment);
 		articleService.save(article);
-		
+
 		ProfileData profileData = new ProfileData(user.getId(), user.getUsername(), user.getBio(), user.getImage(),
 				false);
-		CommentData commentData = new CommentData(0 + "", newCommentParam.getBody(), article.getId() + "", new Date(),
-				new Date(), profileData);
+		CommentData commentData = new CommentData(com.getId() + "", newCommentParam.getBody(), article.getId() + "",
+				new Date(), new Date(), profileData);
 		return ResponseEntity.status(201).body(commentResponse(commentData));
 	}
-	
-	
-	
-	@GetMapping
-    public ResponseEntity getComments(@PathVariable("slug") String slug,
-                                      @AuthenticationPrincipal User user) {
-        Article article = articleService.findArticleBySlug(slug);
-        		     		
-        		
-        List<CommentData> comments = commentService.findComments(article);
-        return ResponseEntity.ok(new HashMap<String, Object>() {{
-            put("comments", comments);
-        }});
-    }
-	/*
-	 * @GetMapping public ResponseEntity getComments(@PathVariable("slug") String
-	 * slug,
-	 * 
-	 * @AuthenticationPrincipal User user) { Article article = findArticle(slug);
-	 * List<CommentData> comments =
-	 * commentQueryService.findByArticleId(article.getId(), user); return
-	 * ResponseEntity.ok(new HashMap<String, Object>() {{ put("comments", comments);
-	 * }}); }
-	 * 
-	 * @RequestMapping(path = "{id}", method = RequestMethod.DELETE) public
-	 * ResponseEntity deleteComment(@PathVariable("slug") String slug,
-	 * 
-	 * @PathVariable("id") String commentId,
-	 * 
-	 * @AuthenticationPrincipal User user) { Article article = findArticle(slug);
-	 * return commentRepository.findById(article.getId(), commentId).map(comment ->
-	 * { if (!AuthorizationService.canWriteComment(user, article, comment)) { throw
-	 * new NoAuthorizationException(); } commentRepository.remove(comment); return
-	 * ResponseEntity.noContent().build();
-	 * }).orElseThrow(ResourceNotFoundException::new); }
-	 * 
-	 */
 
+	@GetMapping
+	public ResponseEntity getComments(@PathVariable("slug") String slug, @AuthenticationPrincipal User user) {
+		Article article = articleService.findArticleBySlug(slug);
+
+		List<CommentData> comments = commentService.findComments(article);
+		return ResponseEntity.ok(new HashMap<String, Object>() {
+			{
+				put("comments", comments);
+			}
+		});
+	}
+
+	@RequestMapping(path = "{id}", method = RequestMethod.DELETE)
+	public ResponseEntity deleteComment(@PathVariable("slug") String slug, @PathVariable("id") String id,
+			@AuthenticationPrincipal User user) {
+		Long idComment=Long.parseLong(id);
+		Comment comment = commentService.findCommentById(idComment);
+		commentService.remove(comment);
+
+		return ResponseEntity.noContent().build();
+
+	}
 	private Map<String, Object> commentResponse(CommentData commentData) {
 		return new HashMap<String, Object>() {
 			{

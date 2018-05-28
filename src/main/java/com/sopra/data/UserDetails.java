@@ -14,5 +14,6 @@ public class UserDetails {
 	private boolean admin;
 	private Long articleCount;
 	private Long commentCount;
-	private Long DemandCount;
+	private Long demandCount;
+	private String team;
 }

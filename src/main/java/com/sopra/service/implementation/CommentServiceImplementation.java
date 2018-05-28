@@ -56,4 +56,22 @@ public class CommentServiceImplementation implements CommentService {
 		return commentDatalist;
 	}
 
+	@Override
+	public void remove(Comment comment) {
+		
+		commentRepository.delete(comment);
+	}
+
+	@Override
+	public Comment findCommentById(Long id) {
+		
+		return commentRepository.findCommentById(id);
+	}
+
+	@Override
+	public Comment saveAndReturn(Comment comment) {
+		
+		return commentRepository.save(comment);
+	}
+
 }

@@ -10,6 +10,12 @@ public interface  CommentService {
     void save(Comment comment);
     
     List<CommentData> findComments(Article article);
+    
+    void remove(Comment comment);
+    
+    Comment findCommentById(Long id);
+    
+    Comment saveAndReturn(Comment comment);
 
     
 }

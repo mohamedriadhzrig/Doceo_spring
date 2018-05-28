@@ -14,6 +14,7 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
+import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
@@ -24,6 +25,7 @@ import com.sopra.core.article.Article;
 import com.sopra.core.authority.Authority;
 import com.sopra.core.comment.Comment;
 import com.sopra.core.rate.Rate;
+import com.sopra.core.team.Team;
 
 @Entity
 @Table(name = "USER")
@@ -57,6 +59,25 @@ public class User implements UserDetails, Serializable {
 
 	@OneToMany(mappedBy = "user")
 	private List<Rate> rate;
+
+	@ManyToOne
+	private Team team;
+
+	public List<Rate> getRate() {
+		return rate;
+	}
+
+	public void setRate(List<Rate> rate) {
+		this.rate = rate;
+	}
+
+	public Team getTeam() {
+		return team;
+	}
+
+	public void setTeam(Team team) {
+		this.team = team;
+	}
 
 	@ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	@JoinTable(name = "user_authority", joinColumns = @JoinColumn(name = "user_id", referencedColumnName = "id"), inverseJoinColumns = @JoinColumn(name = "authority_id", referencedColumnName = "id"))

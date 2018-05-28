@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.sopra.api.exception.InvalidRequestException;
 import com.sopra.core.authority.Authority;
 import com.sopra.core.authority.AuthorityService;
+import com.sopra.core.team.TeamService;
 import com.sopra.core.user.User;
 import com.sopra.core.user.UserService;
 import com.sopra.core.utility.EncryptService;
@@ -40,6 +41,9 @@ public class CurrentUserApi {
 
 	@Autowired
 	private AuthorityService authorityService;
+	
+	@Autowired
+	private TeamService teamService;
 
 	@Autowired
 	private EncryptService encryptService;
@@ -51,6 +55,8 @@ public class CurrentUserApi {
 		Authority authority = authorityService.findAuthorityByName("ADMIN");
 		UserData userData = new UserData(null, user.get().getEmail(), user.get().getUsername(), user.get().getBio(),
 				user.get().getImage(), user.get().getAuthorities().contains(authority));
+		
+		userData.setTeam(user.get().getTeam().getName());
 		return ResponseEntity.ok(userResponse(new UserWithToken(userData, authorization.split(" ")[1])));
 	}
 
@@ -64,21 +70,26 @@ public class CurrentUserApi {
 
 		if (!updateUserParam.getPassword().equals(""))
 			currentUser.update(updateUserParam.getEmail(), updateUserParam.getUsername(),
-					encryptService.encrypt(updateUserParam.getPassword()), updateUserParam.getBio(),
+					encryptService.encrypt(updateUserParam.getPassword()), updateUserParam.getPosition(),
 					currentUser.getImage());
 		else {
 			if (updateUserParam.getImage().equals(""))
 				currentUser.update(updateUserParam.getEmail(), updateUserParam.getUsername(), currentUser.getPassword(),
-						updateUserParam.getBio(), currentUser.getImage());
+						updateUserParam.getPosition(), currentUser.getImage());
 			else
 				currentUser.update(updateUserParam.getEmail(), updateUserParam.getUsername(), currentUser.getPassword(),
-						updateUserParam.getBio(), updateUserParam.getImage());
+						updateUserParam.getPosition(), updateUserParam.getImage());
+		}
+		if(!currentUser.getTeam().getName().equals(updateUserParam.getTeam()))
+		{
+			currentUser.setTeam(teamService.findTeamByName(updateUserParam.getTeam()));
 		}
 		userService.save(currentUser);
 		Optional<User> user = userService.findById(currentUser.getId());
 		Authority authority = authorityService.findAuthorityByName("ADMIN");
 		UserData userData = new UserData(null, user.get().getEmail(), user.get().getUsername(), user.get().getBio(),
 				user.get().getImage(), user.get().getAuthorities().contains(authority));
+		userData.setTeam(currentUser.getTeam().getName());
 		return ResponseEntity.ok(userResponse(new UserWithToken(userData, token.split(" ")[1])));
 	}
 
@@ -118,10 +129,11 @@ public class CurrentUserApi {
 @NoArgsConstructor
 @AllArgsConstructor
 class UpdateUserParam {
-	private String bio = "";
+	private String position = "";
 	private String email = "";
 	private String image = "";
 	private String password = "";
 	private String username = "";
+	private String team="";
 
 }

@@ -10,6 +10,8 @@ public interface TagService {
 	void save(Tag tag);
 
 	List<String> findAll();
+	
+	List<Tag> findAllTagsOrderByName();
 
 	void remove(Tag tag);
 }

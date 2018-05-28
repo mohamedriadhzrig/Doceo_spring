@@ -30,7 +30,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 				.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and().authorizeRequests()
 				.antMatchers(HttpMethod.OPTIONS).permitAll().antMatchers(HttpMethod.GET, "/articles/feed")
 				.authenticated().antMatchers(HttpMethod.POST, "/users", "/users/login", "/forgetpassword","/upload").permitAll()
-				.antMatchers(HttpMethod.GET, "/articles/**", "/profiles/**", "/tags","/getallfiles","/files/**").permitAll().anyRequest()
+				.antMatchers(HttpMethod.GET, "/articles/**", "/profiles/**", "/tags","/getallfiles","/files/**","/stats/**","/teams").permitAll().anyRequest()
 				.authenticated()
 				.antMatchers(HttpMethod.POST, "/articles/**").permitAll().anyRequest()
 				.authenticated()
