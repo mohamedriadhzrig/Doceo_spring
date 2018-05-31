@@ -52,4 +52,15 @@ public class TeamServiceImplementation implements TeamService {
 		return teamRepository.findAll();
 	}
 
+	@Override
+	public Team findTeamById(Long id) {
+		return teamRepository.findOne(id);
+	}
+
+	@Override
+	public void deleteById(Long id) {
+		teamRepository.delete(id);
+		
+	}
+
 }

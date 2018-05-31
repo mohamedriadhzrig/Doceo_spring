@@ -63,6 +63,7 @@ public class User implements UserDetails, Serializable {
 	@ManyToOne
 	private Team team;
 
+	
 	public List<Rate> getRate() {
 		return rate;
 	}

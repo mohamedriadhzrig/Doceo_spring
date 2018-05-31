@@ -63,10 +63,12 @@ public class UsersApi {
 		}
 		if (userService.findByUsername(registerParam.getUsername()).isPresent()) {
 			bindingResult.rejectValue("username", "DUPLICATED", "duplicated username");
+			throw new InvalidRequestException(bindingResult);
 		}
 
 		if (userService.findByEmail(registerParam.getEmail()).isPresent()) {
 			bindingResult.rejectValue("email", "DUPLICATED", "duplicated email");
+			throw new InvalidRequestException(bindingResult);
 		}
 
 		if (bindingResult.hasErrors()) {
@@ -96,14 +98,7 @@ public class UsersApi {
 		}
 	}
 
-	@GetMapping("/teams")
-	public ResponseEntity getTeams() {
-		return ResponseEntity.ok(new HashMap<String, Object>() {
-			{
-				put("teams", teamService.findAll());
-			}
-		});
-	}
+	
 
 	@PostMapping("/forgetpassword")
 	public ResponseEntity recoverPassword(@Valid @RequestBody PasswordRecovery passwordRecovery,
@@ -150,7 +145,7 @@ public class UsersApi {
 		user.setBio(registerParam.getPosition());
 
 		User u = userService.save(user);
-		//userTeam.getUsers().add(u);
+		// userTeam.getUsers().add(u);
 		teamService.save(userTeam);
 		UserData userData = new UserData(null, user.getEmail(), user.getUsername(), user.getBio(), user.getImage(),
 				false);

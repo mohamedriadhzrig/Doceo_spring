@@ -1,5 +1,6 @@
 package com.sopra.core.team;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.persistence.Entity;
@@ -28,6 +29,10 @@ public class Team {
 	private Long id;
 	private String name;
 	@OneToMany(mappedBy = "team")
-	private List<User> users;
+	private List<User> users=new ArrayList<User>();
+	public Team(String name) {
+		super();
+		this.name = name;
+	}
 
 }

@@ -26,6 +26,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.sopra.core.comment.Comment;
 import com.sopra.core.rate.Rate;
 import com.sopra.core.tag.Tag;
+import com.sopra.core.theme.Theme;
 import com.sopra.core.user.User;
 
 @Entity
@@ -58,7 +59,10 @@ public class Article implements Serializable {
 	private String statut;
 	@ManyToOne
 	private User user;
-
+	
+	@ManyToOne(cascade = { CascadeType.DETACH })
+	private Theme theme;
+	
 	@OneToMany(mappedBy = "article", cascade = CascadeType.REMOVE, orphanRemoval = true)
 
 	private List<Comment> comments;
@@ -72,6 +76,15 @@ public class Article implements Serializable {
 
 	public void setRatings(List<Rate> ratings) {
 		this.ratings = ratings;
+	}
+	
+	
+	public Theme getTheme() {
+		return theme;
+	}
+
+	public void setTheme(Theme theme) {
+		this.theme = theme;
 	}
 
 	public List<User> getLikedBy() {

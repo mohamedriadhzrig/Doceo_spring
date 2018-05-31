@@ -1,6 +1,7 @@
 package com.sopra.controller;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +15,8 @@ import com.sopra.core.tag.Tag;
 import com.sopra.core.tag.TagService;
 import com.sopra.core.team.Team;
 import com.sopra.core.team.TeamService;
+import com.sopra.core.theme.Theme;
+import com.sopra.core.theme.ThemeService;
 import com.sopra.core.user.User;
 
 import lombok.AllArgsConstructor;
@@ -24,6 +27,9 @@ import lombok.Setter;
 @RestController
 @RequestMapping(path = "/stats")
 public class StatsApi {
+
+	@Autowired
+	private ThemeService themeService;
 
 	@Autowired
 	private TagService tagService;
@@ -37,46 +43,49 @@ public class StatsApi {
 		List<Tag> tagList = tagService.findAllTagsOrderByName();
 		List<TagStats> stats = new ArrayList<>();
 		for (Tag t : tagList) {
-			TagStats tagStats = new TagStats(t.getName(), t.getArticles().size());
+			TagStats tagStats = new TagStats(t.getId(), t.getName(), t.getArticles().size());
 			stats.add(tagStats);
 
 		}
-		/*
-		 * Article article = articleService.findArticleBySlug(slug); ProfileData
-		 * profileData = new ProfileData();
-		 * profileData.setBio(article.getUser().getBio() + "");
-		 * profileData.setUsername(article.getUser().getUsername());
-		 * profileData.setImage(article.getUser().getImage());
-		 * article.setSeen(article.getSeen()); User u =
-		 * userService.findByUsername(user.getUsername()).get();
-		 * profileData.setAdmin(false);
-		 * 
-		 * Double rating; rating = rateService.findArticleRatings(slug); if (rating ==
-		 * null) { rating = 0.0; } DecimalFormat oneDigit = new DecimalFormat("#,##0.0",
-		 * new DecimalFormatSymbols(Locale.ENGLISH));
-		 * 
-		 * ArticleData articleData = new ArticleData(article.getId(), article.getSlug(),
-		 * article.getTitle(), article.getDescription(), article.getBody(),
-		 * article.getFileType(), article.getSeen(), article.getLikedBy().contains(u),
-		 * article.getLikedBy().size(), article.getCreatedAt(), article.getUpdatedAt(),
-		 * article.getTags(), profileData, Double.valueOf(oneDigit.format(rating))); if
-		 * (!(article.getUser().getUsername().equals(user.getUsername()))) {
-		 * article.setSeen(article.getSeen() + 1); articleService.save(article); }
-		 */
-		return ResponseEntity.ok(stats);
+		return ResponseEntity.ok(new HashMap<String, Object>() {
+			{
+				put("tags", stats);
+			}
+		});
 	}
 
 	@GetMapping(value = "/teams")
 	public ResponseEntity statsTeam(@AuthenticationPrincipal User user) {
 
 		List<Team> teamList = teamService.findAllTeams();
-		List<TagStats> stats = new ArrayList<>();
+		List<TeamStats> stats = new ArrayList<>();
 		for (Team t : teamList) {
-			TagStats tagStats = new TagStats(t.getName(), t.getUsers().size());
+			TeamStats tagStats = new TeamStats(t.getId(), t.getName(), t.getUsers().size());
 			stats.add(tagStats);
 
 		}
-		return ResponseEntity.ok(stats);
+		return ResponseEntity.ok(new HashMap<String, Object>() {
+			{
+				put("teams", stats);
+			}
+		});
+	}
+
+	@GetMapping(value = "/themes")
+	public ResponseEntity statsThemes(@AuthenticationPrincipal User user) {
+
+		List<Theme> themeList = themeService.findAll();
+		List<ThemeStats> stats = new ArrayList<>();
+		for (Theme t : themeList) {
+			ThemeStats themeStats = new ThemeStats(t.getId(), t.getName(), t.getArticles().size());
+			stats.add(themeStats);
+
+		}
+		return ResponseEntity.ok(new HashMap<String, Object>() {
+			{
+				put("themes", stats);
+			}
+		});
 	}
 
 }
@@ -86,7 +95,7 @@ public class StatsApi {
 @NoArgsConstructor
 @AllArgsConstructor
 class TagStats {
-
+	private Long id;
 	private String name = "";
 	private int used = 0;
 
@@ -97,8 +106,19 @@ class TagStats {
 @NoArgsConstructor
 @AllArgsConstructor
 class TeamStats {
-
+	private Long id;
 	private String name = "";
-	private int used = 0;
+	private int members = 0;
+
+}
+
+@Setter
+@Getter
+@NoArgsConstructor
+@AllArgsConstructor
+class ThemeStats {
+	private Long id;
+	private String name = "";
+	private int articles = 0;
 
 }

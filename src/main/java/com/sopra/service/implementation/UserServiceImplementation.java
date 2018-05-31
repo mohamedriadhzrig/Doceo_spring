@@ -68,7 +68,10 @@ public class UserServiceImplementation implements UserService {
 			UserDetails u = new UserDetails();
 			u.setUsername(x.getUsername());
 			u.setEmail(x.getEmail());
+			if(!(x.getTeam()==null))
 			u.setTeam(x.getTeam().getName());
+			else
+			u.setTeam("undefined");
 			u.setArticleCount((long) x.getArticles().size());
 
 			u.setCommentCount((long) x.getComments().size());

@@ -34,6 +34,8 @@ import com.sopra.core.rate.Rate;
 import com.sopra.core.rate.RateService;
 import com.sopra.core.tag.Tag;
 import com.sopra.core.tag.TagService;
+import com.sopra.core.theme.Theme;
+import com.sopra.core.theme.ThemeService;
 import com.sopra.core.user.User;
 import com.sopra.core.user.UserService;
 import com.sopra.data.ArticleData;
@@ -58,6 +60,9 @@ public class ArticlesApi {
 
 	@Autowired
 	private TagService tagService;
+	
+	@Autowired
+	ThemeService themeService;
 
 	@GetMapping(value = "/{slug}")
 	public ResponseEntity article(@PathVariable("slug") String slug, @AuthenticationPrincipal User user) {
@@ -128,50 +133,7 @@ public class ArticlesApi {
 
 	}
 
-	@PostMapping
-	public ResponseEntity createArticle(@Valid @RequestBody NewArticleParam newArticleParam,
-			BindingResult bindingResult, @AuthenticationPrincipal User user) {
-		if (bindingResult.hasErrors()) {
-			throw new InvalidRequestException(bindingResult);
-		}
-
-		Article article = new Article(newArticleParam.getTitle(), newArticleParam.getDescription(),
-				newArticleParam.getBody(), user);
-		article.setFileType(newArticleParam.getFileType());
-		article.setStatut("invalide");
-		for (String t : newArticleParam.getTagList()) {
-			Optional<Tag> existingTag = tagService.findTagByName(t);
-			if (!existingTag.isPresent()) {
-				Tag tag = new Tag();
-				tag.setName(t);
-				article.getTags().add(tag);
-				tag.getArticles().add(article);
-			} else {
-				article.getTags().add(existingTag.get());
-				existingTag.get().getArticles().add(article);
-			}
-
-		}
-
-		articleService.save(article);
-
-		return ResponseEntity.ok(new HashMap<String, Object>() {
-			{
-				ProfileData profileData = new ProfileData();
-				profileData.setBio(user.getBio());
-				profileData.setUsername(user.getUsername());
-				profileData.setImage(user.getImage());
-				profileData.setId(user.getId());
-				profileData.setAdmin(false);
-
-				ArticleData articleData = new ArticleData(article.getId(), article.getSlug(), article.getTitle(),
-						article.getDescription(), article.getBody(), article.getFileType(), article.getSeen(), false, 1,
-						article.getCreatedAt(), article.getUpdatedAt(), article.getTags(), profileData, 0.0);
-				put("article", articleData);
-			}
-		});
-	}
-
+	
 	@GetMapping
 	public ResponseEntity getArticles(@RequestParam(value = "offset", defaultValue = "0") int offset,
 			@RequestParam(value = "limit", defaultValue = "20") int limit,
@@ -309,6 +271,52 @@ public class ArticlesApi {
 			}
 		});
 	}
+	
+	@PostMapping
+	public ResponseEntity createArticle(@Valid @RequestBody NewArticleParam newArticleParam,
+			BindingResult bindingResult, @AuthenticationPrincipal User user) {
+		if (bindingResult.hasErrors()) {
+			throw new InvalidRequestException(bindingResult);
+		}
+		Theme theme=themeService.findThemeByName(newArticleParam.getTheme());
+		Article article = new Article(newArticleParam.getTitle(), newArticleParam.getDescription(),
+				newArticleParam.getBody(), user);
+		article.setTheme(theme);
+		article.setFileType(newArticleParam.getFileType());
+		article.setStatut("invalide");
+		for (String t : newArticleParam.getTagList()) {
+			Optional<Tag> existingTag = tagService.findTagByName(t);
+			if (!existingTag.isPresent()) {
+				Tag tag = new Tag();
+				tag.setName(t);
+				article.getTags().add(tag);
+				tag.getArticles().add(article);
+			} else {
+				article.getTags().add(existingTag.get());
+				existingTag.get().getArticles().add(article);
+			}
+
+		}
+
+		articleService.save(article);
+
+		return ResponseEntity.ok(new HashMap<String, Object>() {
+			{
+				ProfileData profileData = new ProfileData();
+				profileData.setBio(user.getBio());
+				profileData.setUsername(user.getUsername());
+				profileData.setImage(user.getImage());
+				profileData.setId(user.getId());
+				profileData.setAdmin(false);
+
+				ArticleData articleData = new ArticleData(article.getId(), article.getSlug(), article.getTitle(),
+						article.getDescription(), article.getBody(), article.getFileType(), article.getSeen(), false, 1,
+						article.getCreatedAt(), article.getUpdatedAt(), article.getTags(), profileData, 0.0);
+				put("article", articleData);
+			}
+		});
+	}
+
 }
 
 @ToString
@@ -325,6 +333,8 @@ class NewArticleParam {
 	@NotBlank(message = "can't be empty")
 	private String fileType;
 	private List<String> tagList;
+	@NotBlank(message = "can't be empty")
+	private String theme;
 }
 
 @Getter
