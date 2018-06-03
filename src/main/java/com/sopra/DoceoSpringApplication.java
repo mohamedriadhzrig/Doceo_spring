@@ -13,15 +13,6 @@ import com.sopra.core.authority.AuthorityService;
 public class DoceoSpringApplication implements CommandLineRunner {
 
 	
-	/*
-	 * spring.datasource.url=jdbc:mysql://localhost:3306/platforme
-	 * spring.datasource.username=root spring.datasource.password=
-	 * spring.datasource.dbcp2.driver-class-name=com.mysql.jdbc.Driver
-	 * spring.jpa.hibernate.ddl-auto=update
-	 * spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.MySQL5Dialect
-	 * server.port=8080 spring.jackson.serialization.WRITE_DATES_AS_TIMESTAMPS =
-	 * false
-	 */
 
 	public static void main(String[] args) {
 		SpringApplication.run(DoceoSpringApplication.class, args);
@@ -34,11 +25,6 @@ public class DoceoSpringApplication implements CommandLineRunner {
 
 	@Override
 	public void run(String... arg0) throws Exception {
-		/*Authority user = new Authority("USER");
-		Authority admin = new Authority("ADMIN");
-		authorityService.save(user);
-		authorityService.save(admin);*/
-		// storageService.deleteAll();
-		// storageService.init();
+		
 	}
 }

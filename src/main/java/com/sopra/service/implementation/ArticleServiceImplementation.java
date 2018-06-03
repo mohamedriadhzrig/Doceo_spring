@@ -28,7 +28,7 @@ import com.sopra.repositories.UserRepository;
 @Service
 public class ArticleServiceImplementation implements ArticleService {
 
-	@Autowired
+	@Autowired//injection de dependence
 	ArticleRepository articleRepository;
 
 	@Autowired

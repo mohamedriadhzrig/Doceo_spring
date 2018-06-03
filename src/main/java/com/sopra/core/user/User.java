@@ -26,6 +26,7 @@ import com.sopra.core.authority.Authority;
 import com.sopra.core.comment.Comment;
 import com.sopra.core.rate.Rate;
 import com.sopra.core.team.Team;
+import com.sopra.core.theme.Theme;
 
 @Entity
 @Table(name = "USER")
@@ -92,6 +93,19 @@ public class User implements UserDetails, Serializable {
 
 	@OneToMany(mappedBy = "user")
 	private List<Article> articles;
+	
+	@ManyToMany(fetch = FetchType.LAZY, cascade = { CascadeType.PERSIST, CascadeType.MERGE })
+	private List<Theme> themes;
+	
+	
+
+	public List<Theme> getThemes() {
+		return themes;
+	}
+
+	public void setThemes(List<Theme> themes) {
+		this.themes = themes;
+	}
 
 	public List<Article> getFavoriteArticles() {
 		return favoriteArticles;

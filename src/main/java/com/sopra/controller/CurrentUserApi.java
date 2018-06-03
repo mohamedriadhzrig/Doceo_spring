@@ -1,6 +1,8 @@
 package com.sopra.controller;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -11,16 +13,20 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.fasterxml.jackson.annotation.JsonRootName;
 import com.sopra.api.exception.InvalidRequestException;
 import com.sopra.core.authority.Authority;
 import com.sopra.core.authority.AuthorityService;
 import com.sopra.core.team.TeamService;
+import com.sopra.core.theme.Theme;
+import com.sopra.core.theme.ThemeService;
 import com.sopra.core.user.User;
 import com.sopra.core.user.UserService;
 import com.sopra.core.utility.EncryptService;
@@ -41,9 +47,12 @@ public class CurrentUserApi {
 
 	@Autowired
 	private AuthorityService authorityService;
-	
+
 	@Autowired
 	private TeamService teamService;
+
+	@Autowired
+	private ThemeService themeService;
 
 	@Autowired
 	private EncryptService encryptService;
@@ -53,11 +62,38 @@ public class CurrentUserApi {
 			@RequestHeader(value = "Authorization") String authorization) {
 		Optional<User> user = userService.findById(currentUser.getId());
 		Authority authority = authorityService.findAuthorityByName("ADMIN");
+
+		List<String> themes = new ArrayList<String>();
+		for (Theme t : user.get().getThemes()) {
+			themes.add(t.getName());
+		}
+
 		UserData userData = new UserData(null, user.get().getEmail(), user.get().getUsername(), user.get().getBio(),
-				user.get().getImage(), user.get().getAuthorities().contains(authority));
-		
-		userData.setTeam(user.get().getTeam().getName());
+				user.get().getImage(), user.get().getAuthorities().contains(authority), themes,
+				user.get().getTeam().getName());
 		return ResponseEntity.ok(userResponse(new UserWithToken(userData, authorization.split(" ")[1])));
+	}
+
+	@PostMapping(value = "/themes")
+	public ResponseEntity<?> saveUserThemes(@AuthenticationPrincipal User user, @Valid @RequestBody NewThemes newThemes,
+			BindingResult bindingResult) {
+
+		if (bindingResult.hasErrors()) {
+			throw new InvalidRequestException(bindingResult);
+		}
+		Optional<User> Currentuser = userService.findById(user.getId());
+		Currentuser.get().setThemes(new ArrayList<Theme>());
+			
+			for (String newTheme : newThemes.getThemes()) {
+				Theme theme = new Theme();
+				theme = themeService.findThemeByName(newTheme);
+				Currentuser.get().getThemes().add(theme);
+			}
+			userService.save(Currentuser.get());
+		
+		
+		
+		return ResponseEntity.ok(newThemes);
 	}
 
 	@PutMapping
@@ -80,8 +116,7 @@ public class CurrentUserApi {
 				currentUser.update(updateUserParam.getEmail(), updateUserParam.getUsername(), currentUser.getPassword(),
 						updateUserParam.getPosition(), updateUserParam.getImage());
 		}
-		if(!currentUser.getTeam().getName().equals(updateUserParam.getTeam()))
-		{
+		if (!currentUser.getTeam().getName().equals(updateUserParam.getTeam())) {
 			currentUser.setTeam(teamService.findTeamByName(updateUserParam.getTeam()));
 		}
 		userService.save(currentUser);
@@ -134,6 +169,18 @@ class UpdateUserParam {
 	private String image = "";
 	private String password = "";
 	private String username = "";
-	private String team="";
+	private String team = "";
+
+}
+
+@Setter
+@Getter
+@ToString
+@NoArgsConstructor
+@AllArgsConstructor
+@JsonRootName("newThemes")
+class NewThemes {
+
+	private List<String> themes=new ArrayList<String>();
 
 }

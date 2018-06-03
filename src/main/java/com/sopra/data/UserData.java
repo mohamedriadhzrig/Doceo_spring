@@ -1,5 +1,8 @@
 package com.sopra.data;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -15,9 +18,8 @@ public class UserData {
 	private String image;
 	private String team;
 	private boolean admin;
+	private List<String> themeList=new ArrayList<String>();
 
-	
-	
 	public String getId() {
 		return id;
 	}
@@ -54,6 +56,32 @@ public class UserData {
 		this.position = bio;
 		this.image = image;
 		this.admin = admin;
+	}
+
+	public UserData(String id, String email, String username, String bio, String image, boolean admin,List<String> themeList) {
+		super();
+		this.id = id;
+		this.email = email;
+		this.username = username;
+		this.position = bio;
+		this.image = image;
+		this.admin = admin;
+		this.themeList.addAll(themeList);
+	}
+	
+	public UserData(String id, String email, String username, String bio, String image, boolean admin,List<String> themeList,String team) {
+		super();
+		this.id = id;
+		this.email = email;
+		this.username = username;
+		this.position = bio;
+		this.image = image;
+		this.admin = admin;
+		this.team=team;
+		this.themeList.addAll(themeList);
+	}
+	public List<String> getThemeList() {
+		return themeList;
 	}
 
 }

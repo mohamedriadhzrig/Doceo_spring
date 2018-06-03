@@ -2,7 +2,9 @@ package com.sopra.controller;
 
 import static org.springframework.web.bind.annotation.RequestMethod.POST;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -13,7 +15,6 @@ import org.hibernate.validator.constraints.NotBlank;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -24,6 +25,7 @@ import com.sopra.core.authority.Authority;
 import com.sopra.core.authority.AuthorityService;
 import com.sopra.core.team.Team;
 import com.sopra.core.team.TeamService;
+import com.sopra.core.theme.Theme;
 import com.sopra.core.user.User;
 import com.sopra.core.user.UserService;
 import com.sopra.core.utility.EncryptService;
@@ -82,23 +84,22 @@ public class UsersApi {
 		if (optional.isPresent() && encryptService.check(loginParam.getPassword(), optional.get().getPassword())) {
 			Optional<User> user = userService.findById(optional.get().getId());
 			Authority authority = authorityService.findAuthorityByName("ADMIN");
-			if (user.get().getAuthorities().contains(authority)) {
-				UserData userData = new UserData(null, user.get().getEmail(), user.get().getUsername(),
-						user.get().getBio(), user.get().getImage(), true);
-				return ResponseEntity.ok(userResponse(new UserWithToken(userData, jwtService.toToken(optional.get()))));
-			} else {
-				UserData userData = new UserData(null, user.get().getEmail(), user.get().getUsername(),
-						user.get().getBio(), user.get().getImage(), false);
-				return ResponseEntity.ok(userResponse(new UserWithToken(userData, jwtService.toToken(optional.get()))));
+
+			List<String> themes = new ArrayList<String>();
+			for (Theme t : user.get().getThemes()) {
+				themes.add(t.getName());
 			}
+
+			UserData userData = new UserData(null, user.get().getEmail(), user.get().getUsername(), user.get().getBio(),
+					user.get().getImage(), user.get().getAuthorities().contains(authority), themes,
+					user.get().getTeam().getName());
+			return ResponseEntity.ok(userResponse(new UserWithToken(userData, jwtService.toToken(optional.get()))));
 
 		} else {
 			bindingResult.rejectValue("password", "INVALID", "invalid email or password");
 			throw new InvalidRequestException(bindingResult);
 		}
 	}
-
-	
 
 	@PostMapping("/forgetpassword")
 	public ResponseEntity recoverPassword(@Valid @RequestBody PasswordRecovery passwordRecovery,

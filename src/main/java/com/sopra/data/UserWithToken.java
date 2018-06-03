@@ -1,5 +1,8 @@
 package com.sopra.data;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class UserWithToken {
 	private String email;
 	private String username = "try";
@@ -8,6 +11,7 @@ public class UserWithToken {
 	private String token;
 	private String team;
 	private boolean admin;
+	private List<String> themeList = new ArrayList<String>();
 
 	public UserWithToken(UserData userData, String token) {
 		this.email = userData.getEmail();
@@ -17,7 +21,22 @@ public class UserWithToken {
 		this.token = token;
 		this.team = userData.getTeam();
 		this.admin = userData.isAdmin();
+		this.themeList = userData.getThemeList();
 	}
+	
+	
+
+	public List<String> getThemeList() {
+		return themeList;
+	}
+
+
+
+	public void setThemeList(List<String> themeList) {
+		this.themeList = themeList;
+	}
+
+
 
 	public boolean isAdmin() {
 		return admin;
@@ -41,14 +60,6 @@ public class UserWithToken {
 
 	public void setUsername(String username) {
 		this.username = username;
-	}
-
-	public String getBio() {
-		return position;
-	}
-
-	public void setBio(String bio) {
-		this.position = bio;
 	}
 
 	public String getImage() {
@@ -82,5 +93,5 @@ public class UserWithToken {
 	public void setTeam(String team) {
 		this.team = team;
 	}
-	
+
 }

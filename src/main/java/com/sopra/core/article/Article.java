@@ -60,7 +60,7 @@ public class Article implements Serializable {
 	@ManyToOne
 	private User user;
 	
-	@ManyToOne(cascade = { CascadeType.DETACH })
+	@ManyToOne
 	private Theme theme;
 	
 	@OneToMany(mappedBy = "article", cascade = CascadeType.REMOVE, orphanRemoval = true)

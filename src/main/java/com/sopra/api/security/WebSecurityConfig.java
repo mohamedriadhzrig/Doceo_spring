@@ -29,7 +29,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 				.authenticationEntryPoint(new Http401AuthenticationEntryPoint("Unauthenticated")).and()
 				.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and().authorizeRequests()
 				.antMatchers(HttpMethod.OPTIONS).permitAll().antMatchers(HttpMethod.GET, "/articles/feed")
-				.authenticated().antMatchers(HttpMethod.POST, "/users", "/team/**", "/users/login", "/forgetpassword", "/upload")
+				.authenticated().antMatchers(HttpMethod.POST, "/users", "/team/**", "/users/login", "/forgetpassword", "/upload","/user/themes")
 				.permitAll()
 				.antMatchers(HttpMethod.GET,"/teams", "/articles/**", "/profiles/**", "/tags", "/getallfiles", "/files/**",
 						"/stats/**", "/team/**")
