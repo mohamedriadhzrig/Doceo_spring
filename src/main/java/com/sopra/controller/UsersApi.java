@@ -69,7 +69,7 @@ public class UsersApi {
 		}
 
 		if (userService.findByEmail(registerParam.getEmail()).isPresent()) {
-			bindingResult.rejectValue("email", "DUPLICATED", "duplicated email");
+			bindingResult.rejectValue("email", "DUPLICATED", "duplicated email");	
 			throw new InvalidRequestException(bindingResult);
 		}
 
@@ -107,7 +107,7 @@ public class UsersApi {
 
 		Optional<User> user = userService.findByEmail(passwordRecovery.getEmail());
 		if (!user.isPresent()) {
-			bindingResult.rejectValue("email", "INVALID", "this email doesn't exist");
+			bindingResult.rejectValue("email", "INVALID", "doesn't exist");
 			throw new InvalidRequestException(bindingResult);
 		} else {
 

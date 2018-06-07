@@ -7,7 +7,7 @@ import com.sopra.core.team.Team;
 @Repository
 public interface TeamRepository extends JpaRepository<Team, Long> {
 
-	Team save(Team team);
+	
 	
 	Team findTeamByName(String name);
 }

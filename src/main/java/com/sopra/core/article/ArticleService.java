@@ -10,9 +10,7 @@ public interface ArticleService {
 
 	void save(Article article);
 
-	Optional<Article> findById(Long id);
 
-	Optional<Article> findBySlug(String slug, User user);
 
 	void remove(Article article);
 
@@ -29,5 +27,7 @@ public interface ArticleService {
 	AdminArticleDataList findAllInvalide();
 
 	Article findArticleBySlug(String slug);
+	
+	ArticleDataList getFeed(User user);
 
 }

@@ -10,33 +10,28 @@ import org.springframework.stereotype.Repository;
 
 import com.sopra.core.article.Article;
 import com.sopra.core.tag.Tag;
+import com.sopra.core.theme.Theme;
 import com.sopra.core.user.User;
 
 @Repository
 public interface ArticleRepository extends JpaRepository<Article, Long> {
-	@Query("select a from Article a where a.slug = :x and a.user = :y")
-	Article findBySlug(@Param("x") String slug, @Param("y") User user);
 
-	@Query("select a from Article a where (a.user.username is null or a.user.username='' or a.user.username = :author) order by a.createdAt desc")
-	List<Article> findArticles(@Param("author") String author);
-	
-	@Query("select a from Article a where (a.user.username = :author and a.statut = 'valide') order by a.createdAt desc")
-	List<Article> findValidArticlesByUser(@Param("author") String author);
+	List<Article> findByUserIsAndStatutIsOrderByCreatedAtDesc(User user, String statut);
 
 	Article findArticleBySlug(String slug);
 
 	@Query("select a from Article a,Tag t where (:tag is null  or( a MEMBER OF t.articles AND t = :tag) AND a.statut = 'valide')  order by a.createdAt desc ")
 	List<Article> findArticlesByTag(@Param("tag") Tag tag);
-	
-	@Query("select a from Article a where a.statut = 'valide' order by a.createdAt desc")
-	List<Article> findValideArticle();
-	
-	@Query("select a from Article a where (a.statut != 'valide' )order by a.createdAt asc")
-	List<Article> findAllInvalide();
-	
+
+	List<Article> findByThemeInAndStatutIsOrderByCreatedAtDesc(List<Theme> theme, String statut);
+
+	List<Article> findByStatutIsOrderByCreatedAtAsc(String statut);
+
+	List<Article> findByStatutIsOrderByCreatedAtDesc(String statut);
+
 	List<Article> findAllByOrderByCreatedAtDesc();
-	
-	Long countByCreatedAtBetween(Date date1,Date date2);
+
+	Long countByCreatedAtBetween(Date date1, Date date2);
 }
 
 // (a.tag is null or a.tag.name = :tag) and Select a from article a, tag t where

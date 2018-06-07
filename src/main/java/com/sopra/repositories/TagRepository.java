@@ -15,6 +15,5 @@ public interface TagRepository extends JpaRepository<Tag, Long>{
 
 	Tag findTagByName(String name);
 	
-	@Query("select t from Tag t order by t.name asc")
-	List<Tag> findAllOrderByNameAsk();
+	List<Tag> findAllByOrderByNameAsc();
 }

@@ -60,12 +60,12 @@ public class ArticlesApi {
 
 	@Autowired
 	private TagService tagService;
-	
+
 	@Autowired
 	ThemeService themeService;
 
 	@GetMapping(value = "/{slug}")
-	public ResponseEntity article(@PathVariable("slug") String slug, @AuthenticationPrincipal User user) {
+	public ResponseEntity<?> article(@PathVariable("slug") String slug, @AuthenticationPrincipal User user) {
 
 		Article article = articleService.findArticleBySlug(slug);
 		ProfileData profileData = new ProfileData();
@@ -94,8 +94,14 @@ public class ArticlesApi {
 		return ResponseEntity.ok(articleResponse(articleData));
 	}
 
+	@GetMapping(path = "/feed")
+	public ResponseEntity<?> getFeed(@AuthenticationPrincipal User user) {
+
+		return ResponseEntity.ok(articleService.getFeed(userService.findById(user.getId()).get()));
+	}
+
 	@DeleteMapping(value = "/{slug}")
-	public ResponseEntity deleteArticle(@PathVariable("slug") String slug, @AuthenticationPrincipal User user) {
+	public ResponseEntity<?> deleteArticle(@PathVariable("slug") String slug, @AuthenticationPrincipal User user) {
 		Article article = articleService.findArticleBySlug(slug);
 		articleService.remove(article);
 		return ResponseEntity.noContent().build();
@@ -133,21 +139,16 @@ public class ArticlesApi {
 
 	}
 
-	
 	@GetMapping
-	public ResponseEntity getArticles(@RequestParam(value = "offset", defaultValue = "0") int offset,
-			@RequestParam(value = "limit", defaultValue = "20") int limit,
-			@RequestParam(value = "tag", required = false) String tag,
+	public ResponseEntity<?> getArticles(@RequestParam(value = "tag", required = false) String tag,
 			@RequestParam(value = "favorited", required = false) String favoritedBy,
 			@RequestParam(value = "author", required = false) String author,
 			@RequestParam(value = "admin", required = false) String admin, @AuthenticationPrincipal User user) {
 		User u = userService.findByUsername(user.getUsername()).get();
 		if (!(favoritedBy == null))
 			return ResponseEntity.ok(articleService.findFavoriteArticles(favoritedBy, u));
-
 		if (!(tag == null))
 			return ResponseEntity.ok(articleService.findArticlesByTag(tag, u));
-
 		if (!(author == null)) {
 			if (author == u.getUsername())
 				return ResponseEntity.ok(articleService.findArticles(author, u));
@@ -164,13 +165,13 @@ public class ArticlesApi {
 	}
 
 	@GetMapping(value = "/invalide/admin")
-	public ResponseEntity invalideArticle(@AuthenticationPrincipal User user) {
+	public ResponseEntity<?> invalideArticle(@AuthenticationPrincipal User user) {
 
 		return ResponseEntity.ok(articleService.findAllInvalide());
 	}
 
 	@PostMapping(value = "/{slug}/favorite")
-	public ResponseEntity favoriteArticle(@PathVariable("slug") String slug, @AuthenticationPrincipal User user) {
+	public ResponseEntity<?> favoriteArticle(@PathVariable("slug") String slug, @AuthenticationPrincipal User user) {
 		Article article = articleService.findArticleBySlug(slug);
 		User u = new User();
 		u = userService.findByUsername(user.getUsername()).get();
@@ -192,11 +193,11 @@ public class ArticlesApi {
 				article.getDescription(), article.getBody(), article.getFileType(), article.getSeen(), false, 1,
 				article.getCreatedAt(), article.getUpdatedAt(), article.getTags(), profileData,
 				Double.valueOf(oneDigit.format(rating)));
-		return responseArticleData(articleData);
+		return ResponseEntity.ok(articleResponse(articleData));
 	}
 
 	@DeleteMapping(path = "/{slug}/favorite")
-	public ResponseEntity unfavoriteArticle(@PathVariable("slug") String slug, @AuthenticationPrincipal User user) {
+	public ResponseEntity<?> unfavoriteArticle(@PathVariable("slug") String slug, @AuthenticationPrincipal User user) {
 		Article article = articleService.findArticleBySlug(slug);
 		User u = new User();
 		u = userService.findByUsername(user.getUsername()).get();
@@ -218,11 +219,11 @@ public class ArticlesApi {
 				article.getDescription(), article.getBody(), article.getFileType(), article.getSeen(), false, 1,
 				article.getCreatedAt(), article.getUpdatedAt(), article.getTags(), profileData,
 				Double.valueOf(oneDigit.format(rating)));
-		return responseArticleData(articleData);
+		return ResponseEntity.ok(articleResponse(articleData));
 	}
 
 	@PostMapping(value = "/{slug}/rate/{value}")
-	public ResponseEntity favoriteArticle(@PathVariable("slug") String slug, @PathVariable("value") Double value,
+	public ResponseEntity<?> favoriteArticle(@PathVariable("slug") String slug, @PathVariable("value") Double value,
 			@AuthenticationPrincipal User user) {
 		Article article = articleService.findArticleBySlug(slug);
 		User u = new User();
@@ -253,32 +254,18 @@ public class ArticlesApi {
 				article.getDescription(), article.getBody(), article.getFileType(), article.getSeen(), false, 1,
 				article.getCreatedAt(), article.getUpdatedAt(), article.getTags(), profileData,
 				Double.valueOf(oneDigit.format(rating)));
-		return responseArticleData(articleData);
+		return ResponseEntity.ok(articleResponse(articleData));
 	}
 
-	private Map<String, Object> articleResponse(ArticleData articleData) {
-		return new HashMap<String, Object>() {
-			{
-				put("article", articleData);
-			}
-		};
-	}
-
-	private ResponseEntity<HashMap<String, Object>> responseArticleData(final ArticleData articleData) {
-		return ResponseEntity.ok(new HashMap<String, Object>() {
-			{
-				put("article", articleData);
-			}
-		});
-	}
 	
+
 	@PostMapping
-	public ResponseEntity createArticle(@Valid @RequestBody NewArticleParam newArticleParam,
+	public ResponseEntity<?> createArticle(@Valid @RequestBody NewArticleParam newArticleParam,
 			BindingResult bindingResult, @AuthenticationPrincipal User user) {
 		if (bindingResult.hasErrors()) {
 			throw new InvalidRequestException(bindingResult);
 		}
-		Theme theme=themeService.findThemeByName(newArticleParam.getTheme());
+		Theme theme = themeService.findThemeByName(newArticleParam.getTheme());
 		Article article = new Article(newArticleParam.getTitle(), newArticleParam.getDescription(),
 				newArticleParam.getBody(), user);
 		article.setTheme(theme);
@@ -316,7 +303,13 @@ public class ArticlesApi {
 			}
 		});
 	}
-
+	private Map<String, Object> articleResponse(ArticleData articleData) {
+		return new HashMap<String, Object>() {
+			{
+				put("article", articleData);
+			}
+		};
+	}
 }
 
 @ToString

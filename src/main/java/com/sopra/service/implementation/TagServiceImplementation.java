@@ -31,7 +31,7 @@ public class TagServiceImplementation implements TagService {
 
 	@Override
 	public List<String> findAll() {
-		List<Tag> tags = tagRepository.findAll();
+		List<Tag> tags = tagRepository.findAllByOrderByNameAsc();
 		List<String> listTag = new ArrayList<String>();
 		for (Tag t : tags) {
 			listTag.add(t.getName());
@@ -47,8 +47,8 @@ public class TagServiceImplementation implements TagService {
 
 	@Override
 	public List<Tag> findAllTagsOrderByName() {
-		
-		return tagRepository.findAllOrderByNameAsk();
+
+		return tagRepository.findAllByOrderByNameAsc();
 	}
 
 }

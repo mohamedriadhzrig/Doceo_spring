@@ -18,7 +18,6 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import com.sopra.core.user.UserService;
 import com.sopra.core.utility.JwtService;
 
-@SuppressWarnings("SpringJavaAutowiringInspection")
 public class JwtTokenFilter extends OncePerRequestFilter {
 	
 	@Autowired
@@ -32,6 +31,7 @@ public class JwtTokenFilter extends OncePerRequestFilter {
 	@Override
 	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
 			throws ServletException, IOException {
+		
 		getTokenString(request.getHeader(header)).ifPresent(token -> {
 			jwtService.getSubFromToken(token).ifPresent(id -> {
 				if (SecurityContextHolder.getContext().getAuthentication() == null) {

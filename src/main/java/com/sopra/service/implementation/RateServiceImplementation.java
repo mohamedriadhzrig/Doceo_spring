@@ -25,7 +25,7 @@ public class RateServiceImplementation implements RateService {
 	@Override
 	public Optional<Rate> findRateByUsernameInArticle(String username, String slug) {
 		User user = userRepository.findUserByUsername(username);
-		return Optional.ofNullable(rateRepository.findRate(slug, user));
+		return Optional.ofNullable(rateRepository.findRateByArticleSlugAndUser(slug, user));
 	}
 
 	@Override

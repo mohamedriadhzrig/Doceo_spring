@@ -28,7 +28,7 @@ import com.sopra.repositories.UserRepository;
 @Service
 public class ArticleServiceImplementation implements ArticleService {
 
-	@Autowired//injection de dependence
+	@Autowired // injection de dependence
 	ArticleRepository articleRepository;
 
 	@Autowired
@@ -45,17 +45,6 @@ public class ArticleServiceImplementation implements ArticleService {
 
 		articleRepository.save(article);
 
-	}
-
-	@Override
-	public Optional<Article> findById(Long id) {
-
-		return Optional.ofNullable(articleRepository.findOne(id));
-	}
-
-	@Override
-	public Optional<Article> findBySlug(String slug, User user) {
-		return Optional.ofNullable(articleRepository.findBySlug(slug, user));
 	}
 
 	@Override
@@ -83,7 +72,9 @@ public class ArticleServiceImplementation implements ArticleService {
 	public ArticleDataList findArticles(String author, User user) {
 
 		List<Article> list = new ArrayList<Article>();
-		list.addAll(articleRepository.findArticles(author));
+
+		list.addAll(articleRepository
+				.findByUserIsAndStatutIsOrderByCreatedAtDesc(userRepository.findUserByUsername(author), "valide"));
 		List<ArticleData> list1 = new ArrayList<ArticleData>();
 		for (Article a : list) {
 			ArticleData articleData = new ArticleData();
@@ -209,7 +200,7 @@ public class ArticleServiceImplementation implements ArticleService {
 	@Override
 	public ArticleDataList findAllValide(User user) {
 		List<Article> list = new ArrayList<Article>();
-		list.addAll(articleRepository.findValideArticle());
+		list.addAll(articleRepository.findByStatutIsOrderByCreatedAtDesc("valide"));
 
 		List<ArticleData> list1 = new ArrayList<ArticleData>();
 		for (Article a : list) {
@@ -250,7 +241,7 @@ public class ArticleServiceImplementation implements ArticleService {
 	@Override
 	public AdminArticleDataList findAllInvalide() {
 		List<Article> list = new ArrayList<Article>();
-		list.addAll(articleRepository.findAllInvalide());
+		list.addAll(articleRepository.findByStatutIsOrderByCreatedAtAsc("invalide"));
 
 		List<ArticleData> list1 = new ArrayList<ArticleData>();
 		for (Article a : list) {
@@ -298,7 +289,8 @@ public class ArticleServiceImplementation implements ArticleService {
 	@Override
 	public ArticleDataList findValidArticlesByUser(String author, User user) {
 		List<Article> list = new ArrayList<Article>();
-		list.addAll(articleRepository.findValidArticlesByUser(author));
+		list.addAll(articleRepository
+				.findByUserIsAndStatutIsOrderByCreatedAtDesc(userRepository.findUserByUsername(author), "valide"));
 		List<ArticleData> list1 = new ArrayList<ArticleData>();
 		for (Article a : list) {
 			ArticleData articleData = new ArticleData();
@@ -330,6 +322,49 @@ public class ArticleServiceImplementation implements ArticleService {
 
 		}
 
+		ArticleDataList articleDataList = new ArticleDataList(list1, list1.size());
+		return articleDataList;
+	}
+
+	@Override
+	public ArticleDataList getFeed(User user) {
+		List<Article> list = new ArrayList<Article>();
+		if (user.getThemes().isEmpty()) {
+			return this.findAllValide(user);
+		}
+
+		list.addAll(articleRepository.findByThemeInAndStatutIsOrderByCreatedAtDesc(user.getThemes(), "valide"));
+
+		List<ArticleData> list1 = new ArrayList<ArticleData>();
+		for (Article a : list) {
+			ArticleData articleData = new ArticleData();
+			articleData.setSeen(a.getSeen());
+			articleData.setId(a.getId());
+			articleData.setBody(a.getBody());
+			articleData.setCreatedAt(a.getCreatedAt());
+			articleData.setDescription(a.getDescription());
+			articleData.setSlug(a.getSlug());
+			articleData.setTitle(a.getTitle());
+			articleData.setTagList(a.getTags());
+			articleData.setUpdatedAt(a.getUpdatedAt());
+			articleData.setFavorited(a.getUser().getUsername() == user.getUsername() || a.getLikedBy().contains(user));
+			articleData.setFavoritesCount(a.getLikedBy().size());
+			Double rating;
+			rating = rateService.findArticleRatings(a.getSlug());
+			if (rating == null) {
+				rating = 0.0;
+			}
+			articleData.setRating(rating);
+			ProfileData profileData = new ProfileData();
+			profileData.setId(a.getUser().getId());
+			profileData.setUsername(a.getUser().getUsername());
+			profileData.setImage(a.getUser().getImage());
+			profileData.setAdmin(false);
+			profileData.setBio(a.getUser().getBio());
+			articleData.setProfileData(profileData);
+			list1.add(articleData);
+
+		}
 		ArticleDataList articleDataList = new ArticleDataList(list1, list1.size());
 		return articleDataList;
 	}

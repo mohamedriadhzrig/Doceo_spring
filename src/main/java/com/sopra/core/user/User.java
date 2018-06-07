@@ -64,7 +64,6 @@ public class User implements UserDetails, Serializable {
 	@ManyToOne
 	private Team team;
 
-	
 	public List<Rate> getRate() {
 		return rate;
 	}
@@ -93,11 +92,9 @@ public class User implements UserDetails, Serializable {
 
 	@OneToMany(mappedBy = "user")
 	private List<Article> articles;
-	
+
 	@ManyToMany(fetch = FetchType.LAZY, cascade = { CascadeType.PERSIST, CascadeType.MERGE })
 	private List<Theme> themes;
-	
-	
 
 	public List<Theme> getThemes() {
 		return themes;

@@ -7,8 +7,6 @@ import com.sopra.core.theme.Theme;
 
 @Repository
 public interface ThemeRepository extends JpaRepository<Theme,Long > {
-
-	Theme save(Theme theme);
 	
 	Theme findThemeByName(String name);
 }
