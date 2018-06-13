@@ -14,6 +14,7 @@ import javax.persistence.Id;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
@@ -21,15 +22,18 @@ import org.hibernate.annotations.Type;
 import org.passay.CharacterRule;
 import org.passay.EnglishCharacterData;
 import org.passay.PasswordGenerator;
+import org.springframework.data.elasticsearch.annotations.Document;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.sopra.core.comment.Comment;
+import com.sopra.core.history.History;
 import com.sopra.core.rate.Rate;
 import com.sopra.core.tag.Tag;
 import com.sopra.core.theme.Theme;
 import com.sopra.core.user.User;
 
 @Entity
+@Document(indexName = "article", type = "article", shards = 1)
 public class Article implements Serializable {
 
 	@Id
@@ -47,6 +51,7 @@ public class Article implements Serializable {
 
 	@JsonIgnore
 	private List<Tag> tags = new ArrayList<Tag>();
+	@JsonIgnore
 	@ManyToMany(fetch = FetchType.LAZY, cascade = { CascadeType.PERSIST,
 			CascadeType.MERGE }, mappedBy = "favoriteArticles")
 	private List<User> likedBy = new ArrayList<User>();
@@ -57,19 +62,20 @@ public class Article implements Serializable {
 	private String path;
 	private int seen = 0;
 	private String statut;
+	@JsonIgnore
 	@ManyToOne
 	private User user;
-	
+	@JsonIgnore
 	@ManyToOne
 	private Theme theme;
-	
+	@JsonIgnore
 	@OneToMany(mappedBy = "article", cascade = CascadeType.REMOVE, orphanRemoval = true)
-
 	private List<Comment> comments;
-
+	@JsonIgnore
 	@OneToMany(mappedBy = "article")
 	private List<Rate> ratings = new ArrayList<Rate>();
 
+	@JsonIgnore
 	public List<Rate> getRatings() {
 		return ratings;
 	}
@@ -77,8 +83,7 @@ public class Article implements Serializable {
 	public void setRatings(List<Rate> ratings) {
 		this.ratings = ratings;
 	}
-	
-	
+
 	public Theme getTheme() {
 		return theme;
 	}

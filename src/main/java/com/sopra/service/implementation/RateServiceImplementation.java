@@ -6,11 +6,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.sopra.JpaRepositories.RateRepository;
+import com.sopra.JpaRepositories.UserRepository;
 import com.sopra.core.rate.Rate;
 import com.sopra.core.rate.RateService;
 import com.sopra.core.user.User;
-import com.sopra.repositories.RateRepository;
-import com.sopra.repositories.UserRepository;
 
 @Transactional
 @Service

@@ -1,6 +1,7 @@
 package com.sopra.controller;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -22,8 +23,12 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.fasterxml.jackson.annotation.JsonRootName;
 import com.sopra.api.exception.InvalidRequestException;
+import com.sopra.core.article.Article;
+import com.sopra.core.article.ArticleService;
 import com.sopra.core.authority.Authority;
 import com.sopra.core.authority.AuthorityService;
+import com.sopra.core.history.History;
+import com.sopra.core.rate.RateService;
 import com.sopra.core.team.TeamService;
 import com.sopra.core.theme.Theme;
 import com.sopra.core.theme.ThemeService;
@@ -55,10 +60,40 @@ public class CurrentUserApi {
 	private ThemeService themeService;
 
 	@Autowired
+	private ArticleService articleService;
+
+	@Autowired
+	private RateService rateService;
+
+	@Autowired
 	private EncryptService encryptService;
 
+	@GetMapping(value = "/history")
+	public ResponseEntity<?> getHistory(@AuthenticationPrincipal User currentUser) {
+
+		User user = userService.findById(currentUser.getId()).get();
+
+		List<UserHistory> list1 = new ArrayList<UserHistory>();
+		List<History> histories=user.getHistories();
+		Collections.sort(histories, (o1, o2) -> o2.getSeenAt().compareTo(o1.getSeenAt()));
+		for (History h : histories) {
+
+			Article a = articleService.findArticleBySlug(h.getArticleSlug());
+			UserHistory userHistory = new UserHistory(a.getTitle(), a.getSlug(), h.getSeenAt().toString());
+			list1.add(userHistory);
+
+		}
+
+		return ResponseEntity.ok(new HashMap<String, Object>() {
+			{
+
+				put("history", list1);
+			}
+		});
+	}
+
 	@GetMapping
-	public ResponseEntity currentUser(@AuthenticationPrincipal User currentUser,
+	public ResponseEntity<?> currentUser(@AuthenticationPrincipal User currentUser,
 			@RequestHeader(value = "Authorization") String authorization) {
 		Optional<User> user = userService.findById(currentUser.getId());
 		Authority authority = authorityService.findAuthorityByName("ADMIN");
@@ -83,16 +118,14 @@ public class CurrentUserApi {
 		}
 		Optional<User> Currentuser = userService.findById(user.getId());
 		Currentuser.get().setThemes(new ArrayList<Theme>());
-			
-			for (String newTheme : newThemes.getThemes()) {
-				Theme theme = new Theme();
-				theme = themeService.findThemeByName(newTheme);
-				Currentuser.get().getThemes().add(theme);
-			}
-			userService.save(Currentuser.get());
-		
-		
-		
+
+		for (String newTheme : newThemes.getThemes()) {
+			Theme theme = new Theme();
+			theme = themeService.findThemeByName(newTheme);
+			Currentuser.get().getThemes().add(theme);
+		}
+		userService.save(Currentuser.get());
+
 		return ResponseEntity.ok(newThemes);
 	}
 
@@ -178,9 +211,20 @@ class UpdateUserParam {
 @ToString
 @NoArgsConstructor
 @AllArgsConstructor
+class UserHistory {
+	private String title = "";
+	private String slug = "";
+	private String seenAt = "";
+}
+
+@Setter
+@Getter
+@ToString
+@NoArgsConstructor
+@AllArgsConstructor
 @JsonRootName("newThemes")
 class NewThemes {
 
-	private List<String> themes=new ArrayList<String>();
+	private List<String> themes = new ArrayList<String>();
 
 }

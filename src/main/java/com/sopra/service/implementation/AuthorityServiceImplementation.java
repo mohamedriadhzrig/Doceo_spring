@@ -3,9 +3,9 @@ package com.sopra.service.implementation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.sopra.JpaRepositories.AuthorityRepository;
 import com.sopra.core.authority.Authority;
 import com.sopra.core.authority.AuthorityService;
-import com.sopra.repositories.AuthorityRepository;
 @Service
 public class AuthorityServiceImplementation implements AuthorityService {
 

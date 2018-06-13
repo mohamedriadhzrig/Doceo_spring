@@ -11,6 +11,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.sopra.JpaRepositories.ArticleRepository;
+import com.sopra.JpaRepositories.UserRepository;
 import com.sopra.core.article.Article;
 import com.sopra.core.article.ArticleService;
 import com.sopra.core.rate.RateService;
@@ -21,8 +23,6 @@ import com.sopra.data.AdminArticleDataList;
 import com.sopra.data.ArticleData;
 import com.sopra.data.ArticleDataList;
 import com.sopra.data.ProfileData;
-import com.sopra.repositories.ArticleRepository;
-import com.sopra.repositories.UserRepository;
 
 @Transactional
 @Service

@@ -7,9 +7,9 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.sopra.JpaRepositories.TagRepository;
 import com.sopra.core.tag.Tag;
 import com.sopra.core.tag.TagService;
-import com.sopra.repositories.TagRepository;
 
 @Service
 public class TagServiceImplementation implements TagService {

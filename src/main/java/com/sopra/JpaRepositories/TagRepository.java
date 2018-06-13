@@ -1,4 +1,4 @@
-package com.sopra.repositories;
+package com.sopra.JpaRepositories;
 
 import java.util.List;
 

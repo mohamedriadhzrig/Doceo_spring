@@ -7,13 +7,13 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.sopra.JpaRepositories.CommentRepository;
 import com.sopra.core.article.Article;
 import com.sopra.core.article.ArticleService;
 import com.sopra.core.comment.Comment;
 import com.sopra.core.comment.CommentService;
 import com.sopra.data.CommentData;
 import com.sopra.data.ProfileData;
-import com.sopra.repositories.CommentRepository;
 
 @Service
 public class CommentServiceImplementation implements CommentService {

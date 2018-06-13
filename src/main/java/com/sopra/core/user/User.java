@@ -16,6 +16,7 @@ import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
 import org.springframework.security.core.userdetails.UserDetails;
@@ -24,6 +25,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.sopra.core.article.Article;
 import com.sopra.core.authority.Authority;
 import com.sopra.core.comment.Comment;
+import com.sopra.core.history.History;
 import com.sopra.core.rate.Rate;
 import com.sopra.core.team.Team;
 import com.sopra.core.theme.Theme;
@@ -60,7 +62,10 @@ public class User implements UserDetails, Serializable {
 
 	@OneToMany(mappedBy = "user")
 	private List<Rate> rate;
-
+	
+	@OneToMany(fetch=FetchType.LAZY, mappedBy="user")
+	private List<History> histories=new ArrayList<History>();
+	
 	@ManyToOne
 	private Team team;
 
@@ -114,6 +119,15 @@ public class User implements UserDetails, Serializable {
 
 	public List<Comment> getComments() {
 		return comments;
+	}
+
+	
+	public List<History> getHistories() {
+		return histories;
+	}
+
+	public void setHistories(List<History> histories) {
+		this.histories = histories;
 	}
 
 	public void setComments(List<Comment> comments) {

@@ -2,6 +2,7 @@ package com.sopra.controller;
 
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -30,6 +31,8 @@ import com.fasterxml.jackson.annotation.JsonRootName;
 import com.sopra.api.exception.InvalidRequestException;
 import com.sopra.core.article.Article;
 import com.sopra.core.article.ArticleService;
+import com.sopra.core.history.History;
+import com.sopra.core.history.HistoryService;
 import com.sopra.core.rate.Rate;
 import com.sopra.core.rate.RateService;
 import com.sopra.core.tag.Tag;
@@ -38,7 +41,9 @@ import com.sopra.core.theme.Theme;
 import com.sopra.core.theme.ThemeService;
 import com.sopra.core.user.User;
 import com.sopra.core.user.UserService;
+import com.sopra.core.utility.SearchQueryBuilder;
 import com.sopra.data.ArticleData;
+import com.sopra.data.ArticleDataList;
 import com.sopra.data.ProfileData;
 
 import lombok.Getter;
@@ -53,6 +58,9 @@ public class ArticlesApi {
 	private ArticleService articleService;
 
 	@Autowired
+	private HistoryService historyService;
+
+	@Autowired
 	private RateService rateService;
 
 	@Autowired
@@ -64,10 +72,103 @@ public class ArticlesApi {
 	@Autowired
 	ThemeService themeService;
 
+	@Autowired
+	private SearchQueryBuilder searchQueryBuilder;
+
+	@GetMapping(value = "/search/{text}")
+	public ResponseEntity<?> searchArticle(@PathVariable String text, @AuthenticationPrincipal User currentUser) {
+
+		User user = userService.findById(currentUser.getId()).get();
+		List<Article> list = new ArrayList<Article>();
+
+		list.addAll(searchQueryBuilder.getAll(text));
+		List<ArticleData> list1 = new ArrayList<ArticleData>();
+		for (Article b : list) {
+			Article a = articleService.findArticleBySlug(b.getSlug());
+			ArticleData articleData = new ArticleData();
+			articleData.setSeen(a.getSeen());
+			articleData.setId(a.getId());
+			articleData.setBody(a.getBody());
+			articleData.setCreatedAt(a.getCreatedAt());
+			articleData.setDescription(a.getDescription());
+			articleData.setSlug(a.getSlug());
+			articleData.setTitle(a.getTitle());
+			articleData.setTagList(a.getTags());
+			articleData.setUpdatedAt(a.getUpdatedAt());
+			articleData.setFavorited(userService.findById(a.getUser().getId()).get().getUsername() == user.getUsername()
+					|| a.getLikedBy().contains(user));
+			articleData.setFavoritesCount(a.getLikedBy().size());
+			Double rating;
+			rating = rateService.findArticleRatings(a.getSlug());
+			if (rating == null) {
+				rating = 0.0;
+			}
+			articleData.setRating(rating);
+			ProfileData profileData = new ProfileData();
+			profileData.setId(a.getUser().getId());
+			profileData.setUsername(a.getUser().getUsername());
+			profileData.setImage(a.getUser().getImage());
+			profileData.setAdmin(false);
+			profileData.setBio(a.getUser().getBio());
+			articleData.setProfileData(profileData);
+			list1.add(articleData);
+
+		}
+
+		ArticleDataList articleDataList = new ArticleDataList(list1, list1.size());
+		return ResponseEntity.ok(articleDataList);
+	}
+
+	@GetMapping(value = "/titles/{text}")
+	public ResponseEntity<?> getTitles(@PathVariable String text, @AuthenticationPrincipal User currentUser) {
+
+		User user = userService.findById(currentUser.getId()).get();
+		List<Article> list = new ArrayList<Article>();
+
+		list.addAll(searchQueryBuilder.getTitles(text));
+		List<ArticleData> list1 = new ArrayList<ArticleData>();
+		for (Article b : list) {
+			Article a = articleService.findArticleBySlug(b.getSlug());
+			ArticleData articleData = new ArticleData();
+			articleData.setSeen(a.getSeen());
+			articleData.setId(a.getId());
+			articleData.setBody(a.getBody());
+			articleData.setCreatedAt(a.getCreatedAt());
+			articleData.setDescription(a.getDescription());
+			articleData.setSlug(a.getSlug());
+			articleData.setTitle(a.getTitle());
+			articleData.setTagList(a.getTags());
+			articleData.setUpdatedAt(a.getUpdatedAt());
+			articleData.setFavorited(userService.findById(a.getUser().getId()).get().getUsername() == user.getUsername()
+					|| a.getLikedBy().contains(user));
+			articleData.setFavoritesCount(a.getLikedBy().size());
+			Double rating;
+			rating = rateService.findArticleRatings(a.getSlug());
+			if (rating == null) {
+				rating = 0.0;
+			}
+			articleData.setRating(rating);
+			ProfileData profileData = new ProfileData();
+			profileData.setId(a.getUser().getId());
+			profileData.setUsername(a.getUser().getUsername());
+			profileData.setImage(a.getUser().getImage());
+			profileData.setAdmin(false);
+			profileData.setBio(a.getUser().getBio());
+			articleData.setProfileData(profileData);
+			list1.add(articleData);
+
+		}
+
+		ArticleDataList articleDataList = new ArticleDataList(list1, list1.size());
+		return ResponseEntity.ok(articleDataList);
+	}
+
 	@GetMapping(value = "/{slug}")
 	public ResponseEntity<?> article(@PathVariable("slug") String slug, @AuthenticationPrincipal User user) {
 
 		Article article = articleService.findArticleBySlug(slug);
+		History history = new History(user, article.getSlug());
+		historyService.save(history);
 		ProfileData profileData = new ProfileData();
 		profileData.setBio(article.getUser().getBio() + "");
 		profileData.setUsername(article.getUser().getUsername());
@@ -143,7 +244,8 @@ public class ArticlesApi {
 	public ResponseEntity<?> getArticles(@RequestParam(value = "tag", required = false) String tag,
 			@RequestParam(value = "favorited", required = false) String favoritedBy,
 			@RequestParam(value = "author", required = false) String author,
-			@RequestParam(value = "admin", required = false) String admin, @AuthenticationPrincipal User user) {
+			@RequestParam(value = "admin", required = false) String admin,
+			@RequestParam(value = "search", required = false) String search, @AuthenticationPrincipal User user) {
 		User u = userService.findByUsername(user.getUsername()).get();
 		if (!(favoritedBy == null))
 			return ResponseEntity.ok(articleService.findFavoriteArticles(favoritedBy, u));
@@ -161,6 +263,8 @@ public class ArticlesApi {
 			if (admin.equals("users"))
 				return ResponseEntity.ok(userService.findAll());
 		}
+		if (!(search == null))
+			return this.searchArticle(search, user);
 		return ResponseEntity.ok(articleService.findAllValide(u));
 	}
 
@@ -257,8 +361,6 @@ public class ArticlesApi {
 		return ResponseEntity.ok(articleResponse(articleData));
 	}
 
-	
-
 	@PostMapping
 	public ResponseEntity<?> createArticle(@Valid @RequestBody NewArticleParam newArticleParam,
 			BindingResult bindingResult, @AuthenticationPrincipal User user) {
@@ -303,6 +405,7 @@ public class ArticlesApi {
 			}
 		});
 	}
+
 	private Map<String, Object> articleResponse(ArticleData articleData) {
 		return new HashMap<String, Object>() {
 			{
