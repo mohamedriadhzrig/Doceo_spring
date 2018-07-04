@@ -12,11 +12,11 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.sopra.core.authority.Authority;
-import com.sopra.core.authority.AuthorityService;
-import com.sopra.core.user.User;
-import com.sopra.core.user.UserService;
 import com.sopra.data.ProfileData;
+import com.sopra.entities.Authority;
+import com.sopra.entities.User;
+import com.sopra.services.AuthorityService;
+import com.sopra.services.UserService;
 
 @RestController
 public class ProfileApi {

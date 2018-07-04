@@ -17,11 +17,13 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.sopra.api.exception.InvalidRequestException;
-import com.sopra.core.team.Team;
-import com.sopra.core.team.TeamService;
-import com.sopra.core.user.User;
-import com.sopra.core.user.UserService;
+import com.sopra.entities.Article;
+import com.sopra.entities.Team;
+import com.sopra.entities.User;
+import com.sopra.exception.InvalidRequestException;
+import com.sopra.services.ArticleService;
+import com.sopra.services.TeamService;
+import com.sopra.services.UserService;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -35,9 +37,12 @@ public class TeamApi {
 	
 	@Autowired
 	private TeamService teamService;
+	
+	@Autowired
+	private ArticleService articleService;
 
 	@GetMapping
-	public ResponseEntity getTeams() {
+	public ResponseEntity<?> getTeams() {
 		return ResponseEntity.ok(new HashMap<String, Object>() {
 			{
 				put("teams", teamService.findAll());
@@ -46,12 +51,18 @@ public class TeamApi {
 	}
 	
 	@DeleteMapping(value = "/{id}")
-	public ResponseEntity deleteTeam(@PathVariable("id") Long id, @AuthenticationPrincipal User user) {
+	public ResponseEntity<?> deleteTeam(@PathVariable("id") Long id, @AuthenticationPrincipal User user) {
 
 		for(User u:teamService.findTeamById(id).getUsers())
 		{
 			u.setTeam(null);
 			userService.save(u);
+			
+		}
+		for(Article a:teamService.findTeamById(id).getArticles())
+		{
+			a.setTeam(null);
+			articleService.save(a);
 			
 		}
 		

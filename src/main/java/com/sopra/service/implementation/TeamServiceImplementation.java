@@ -7,9 +7,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.sopra.JpaRepositories.TeamRepository;
-import com.sopra.core.team.Team;
-import com.sopra.core.team.TeamService;
+import com.sopra.DAO.TeamRepository;
+import com.sopra.entities.Team;
+import com.sopra.services.TeamService;
 
 @Transactional
 @Service

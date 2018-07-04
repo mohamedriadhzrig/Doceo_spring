@@ -3,6 +3,7 @@ package com.sopra.controller;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -28,23 +29,29 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.fasterxml.jackson.annotation.JsonRootName;
-import com.sopra.api.exception.InvalidRequestException;
-import com.sopra.core.article.Article;
-import com.sopra.core.article.ArticleService;
-import com.sopra.core.history.History;
-import com.sopra.core.history.HistoryService;
-import com.sopra.core.rate.Rate;
-import com.sopra.core.rate.RateService;
-import com.sopra.core.tag.Tag;
-import com.sopra.core.tag.TagService;
-import com.sopra.core.theme.Theme;
-import com.sopra.core.theme.ThemeService;
-import com.sopra.core.user.User;
-import com.sopra.core.user.UserService;
-import com.sopra.core.utility.SearchQueryBuilder;
+import com.sopra.DAO.TagRepository;
 import com.sopra.data.ArticleData;
 import com.sopra.data.ArticleDataList;
 import com.sopra.data.ProfileData;
+import com.sopra.entities.Article;
+import com.sopra.entities.History;
+import com.sopra.entities.Project;
+import com.sopra.entities.Rate;
+import com.sopra.entities.Tag;
+import com.sopra.entities.Team;
+import com.sopra.entities.Theme;
+import com.sopra.entities.User;
+import com.sopra.exception.InvalidRequestException;
+import com.sopra.services.ArticleService;
+import com.sopra.services.HistoryService;
+import com.sopra.services.ProjectService;
+import com.sopra.services.RateService;
+import com.sopra.services.TagService;
+import com.sopra.services.TeamService;
+import com.sopra.services.ThemeService;
+import com.sopra.services.UserService;
+import com.sopra.utility.MailService;
+import com.sopra.utility.SearchQueryBuilder;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -70,11 +77,107 @@ public class ArticlesApi {
 	private TagService tagService;
 
 	@Autowired
-	ThemeService themeService;
+	private ThemeService themeService;
+
+	@Autowired
+	private TeamService teamService;
+
+	@Autowired
+	private ProjectService projectService;
+	
+	@Autowired
+	private MailService mailService;
 
 	@Autowired
 	private SearchQueryBuilder searchQueryBuilder;
 
+	@GetMapping(value = "/advancedsearch")
+	public ResponseEntity<?> searchArticles(@RequestParam(value = "tag", required = false) String tag,
+			@RequestParam(value = "project", required = false) String project,
+			@RequestParam(value = "theme", required = false) String theme,
+			@RequestParam(value = "team", required = false) String team,
+			@RequestParam(value = "search", required = false) String search, @AuthenticationPrincipal User user) {
+		User u = userService.findByUsername(user.getUsername()).get();
+		Tag tagSearch=new Tag();
+		Theme themeSearch=new Theme();
+		Project projectSearch=new Project();
+		String textSearch ;
+		Team teamSearch=new Team();
+		
+		if (tag == null || tag=="")
+			tagSearch=null;
+		else
+		{
+			Optional<Tag> existingTag = tagService.findTagByName(tag);
+			tagSearch=existingTag.get();
+		}
+		
+		if (theme == null || theme=="")
+			themeSearch=null;
+		else
+		{
+			themeSearch=themeService.findThemeByName(theme);
+		}
+		
+		if (project == null || project=="")
+			projectSearch=null;
+		else
+		{
+			projectSearch=projectService.findProjectByName(project);
+		}
+		
+		if (team == null || team=="")
+			teamSearch=null;
+		else
+		{
+			teamSearch=teamService.findTeamByName(team);
+		}
+		if (search == null || search=="")
+			textSearch=null;
+		else
+		{
+			textSearch="%"+search+"%";
+		}
+		return ResponseEntity.ok(articleService.findArticlesBy(textSearch, projectSearch, teamSearch, themeSearch, tagSearch, u));
+	}
+	
+	@GetMapping
+	public ResponseEntity<?> getArticles(@RequestParam(value = "tag", required = false) String tag,
+			@RequestParam(value = "favorited", required = false) String favoritedBy,
+			@RequestParam(value = "author", required = false) String author,
+			@RequestParam(value = "admin", required = false) String admin,
+			@RequestParam(value = "project", required = false) String project,
+			@RequestParam(value = "theme", required = false) String theme,
+			@RequestParam(value = "team", required = false) String team,
+			@RequestParam(value = "search", required = false) String search, @AuthenticationPrincipal User user) {
+		User u = userService.findByUsername(user.getUsername()).get();
+		
+		if (!(favoritedBy == null))
+			return ResponseEntity.ok(articleService.findFavoriteArticles(favoritedBy, u));
+		if (!(tag == null))
+			if (!(theme == null))
+				return ResponseEntity.ok(articleService.findArticlesByTagAndTheme(tag, theme, user));
+			else
+				return ResponseEntity.ok(articleService.findArticlesByTag(tag, u));
+		if (!(author == null)) {
+			if (author == u.getUsername())
+				return ResponseEntity.ok(articleService.findArticles(author, u));
+			else
+				return ResponseEntity.ok(articleService.findValidArticlesByUser(author, u));
+		}
+		if (!(theme == null))
+			return ResponseEntity.ok(articleService.findArticlesByTheme(theme, u));
+		if (!(admin == null)) {
+			if (admin.equals("articles"))
+				return ResponseEntity.ok(articleService.findAllInvalide());
+			if (admin.equals("users"))
+				return ResponseEntity.ok(userService.findAll());
+		}
+		if (!(search == null))
+			return this.searchArticle(search, user);
+		return ResponseEntity.ok(articleService.findAllValide(u));
+	}
+	
 	@GetMapping(value = "/search/{text}")
 	public ResponseEntity<?> searchArticle(@PathVariable String text, @AuthenticationPrincipal User currentUser) {
 
@@ -82,6 +185,7 @@ public class ArticlesApi {
 		List<Article> list = new ArrayList<Article>();
 
 		list.addAll(searchQueryBuilder.getAll(text));
+		Collections.sort(list, (o1, o2) -> o2.getCreatedAt().compareTo(o1.getCreatedAt()));
 		List<ArticleData> list1 = new ArrayList<ArticleData>();
 		for (Article b : list) {
 			Article a = articleService.findArticleBySlug(b.getSlug());
@@ -163,6 +267,16 @@ public class ArticlesApi {
 		return ResponseEntity.ok(articleDataList);
 	}
 
+	@GetMapping(value = "/tags/{text}")
+	public ResponseEntity<?> getTagss(@PathVariable String text, @AuthenticationPrincipal User currentUser) {
+
+		return ResponseEntity.ok(new HashMap<String, Object>() {
+			{
+				put("tags", tagService.findSuggestion(text));
+			}
+		});
+	}
+
 	@GetMapping(value = "/{slug}")
 	public ResponseEntity<?> article(@PathVariable("slug") String slug, @AuthenticationPrincipal User user) {
 
@@ -205,6 +319,7 @@ public class ArticlesApi {
 	public ResponseEntity<?> deleteArticle(@PathVariable("slug") String slug, @AuthenticationPrincipal User user) {
 		Article article = articleService.findArticleBySlug(slug);
 		articleService.remove(article);
+		mailService.sendMail(article.getUser().getEmail(), "Deleted article", "Your article intitled : "+article.getTitle()+" has been deleted from the platform");
 		return ResponseEntity.noContent().build();
 
 	}
@@ -234,39 +349,20 @@ public class ArticlesApi {
 	@PutMapping(value = "/{slug}/validate")
 	public void validateArticle(@PathVariable("slug") String slug, @AuthenticationPrincipal User user) {
 		Article article = articleService.findArticleBySlug(slug);
+		
 		article.setStatut("valide");
 		article.setValidatedAt(new Date());
 		articleService.save(article);
+		Team team=article.getTeam();
+		for(User u:team.getUsers())
+		{
+			mailService.sendMail(u.getEmail(), "New article added: "+article.getTitle(), "The description of this article is : "+article.getDescription());
+		}
+		mailService.sendMail(article.getUser().getEmail(),"Article Validated By "+user.getUsername(),"Your article titled: "+article.getTitle()+" was validated and added to the platform ");
 
 	}
 
-	@GetMapping
-	public ResponseEntity<?> getArticles(@RequestParam(value = "tag", required = false) String tag,
-			@RequestParam(value = "favorited", required = false) String favoritedBy,
-			@RequestParam(value = "author", required = false) String author,
-			@RequestParam(value = "admin", required = false) String admin,
-			@RequestParam(value = "search", required = false) String search, @AuthenticationPrincipal User user) {
-		User u = userService.findByUsername(user.getUsername()).get();
-		if (!(favoritedBy == null))
-			return ResponseEntity.ok(articleService.findFavoriteArticles(favoritedBy, u));
-		if (!(tag == null))
-			return ResponseEntity.ok(articleService.findArticlesByTag(tag, u));
-		if (!(author == null)) {
-			if (author == u.getUsername())
-				return ResponseEntity.ok(articleService.findArticles(author, u));
-			else
-				return ResponseEntity.ok(articleService.findValidArticlesByUser(author, u));
-		}
-		if (!(admin == null)) {
-			if (admin.equals("articles"))
-				return ResponseEntity.ok(articleService.findAllInvalide());
-			if (admin.equals("users"))
-				return ResponseEntity.ok(userService.findAll());
-		}
-		if (!(search == null))
-			return this.searchArticle(search, user);
-		return ResponseEntity.ok(articleService.findAllValide(u));
-	}
+	
 
 	@GetMapping(value = "/invalide/admin")
 	public ResponseEntity<?> invalideArticle(@AuthenticationPrincipal User user) {
@@ -368,9 +464,13 @@ public class ArticlesApi {
 			throw new InvalidRequestException(bindingResult);
 		}
 		Theme theme = themeService.findThemeByName(newArticleParam.getTheme());
+		Team team = teamService.findTeamByName(newArticleParam.getTeam());
+		Project project = projectService.findProjectByName(newArticleParam.getProject());
 		Article article = new Article(newArticleParam.getTitle(), newArticleParam.getDescription(),
 				newArticleParam.getBody(), user);
 		article.setTheme(theme);
+		article.setTeam(team);
+		article.setProject(project);
 		article.setFileType(newArticleParam.getFileType());
 		article.setStatut("invalide");
 		for (String t : newArticleParam.getTagList()) {
@@ -431,6 +531,10 @@ class NewArticleParam {
 	private List<String> tagList;
 	@NotBlank(message = "can't be empty")
 	private String theme;
+	@NotBlank(message = "can't be empty")
+	private String team;
+	@NotBlank(message = "can't be empty")
+	private String project;
 }
 
 @Getter

@@ -20,14 +20,14 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.sopra.api.exception.InvalidRequestException;
-import com.sopra.core.article.Article;
-import com.sopra.core.article.ArticleService;
-import com.sopra.core.comment.Comment;
-import com.sopra.core.comment.CommentService;
-import com.sopra.core.user.User;
 import com.sopra.data.CommentData;
 import com.sopra.data.ProfileData;
+import com.sopra.entities.Article;
+import com.sopra.entities.Comment;
+import com.sopra.entities.User;
+import com.sopra.exception.InvalidRequestException;
+import com.sopra.services.ArticleService;
+import com.sopra.services.CommentService;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;

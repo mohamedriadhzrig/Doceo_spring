@@ -23,7 +23,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.method.annotation.MvcUriComponentsBuilder;
 
-import com.sopra.core.utility.StorageService;
+import com.sopra.utility.StorageService;
 
 @CrossOrigin
 @Controller

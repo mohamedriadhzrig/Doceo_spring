@@ -8,7 +8,7 @@ import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.sopra.core.tag.Tag;
+import com.sopra.entities.Tag;
 
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;

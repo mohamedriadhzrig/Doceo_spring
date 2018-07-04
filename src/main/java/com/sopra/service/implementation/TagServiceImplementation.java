@@ -7,9 +7,9 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.sopra.JpaRepositories.TagRepository;
-import com.sopra.core.tag.Tag;
-import com.sopra.core.tag.TagService;
+import com.sopra.DAO.TagRepository;
+import com.sopra.entities.Tag;
+import com.sopra.services.TagService;
 
 @Service
 public class TagServiceImplementation implements TagService {
@@ -49,6 +49,16 @@ public class TagServiceImplementation implements TagService {
 	public List<Tag> findAllTagsOrderByName() {
 
 		return tagRepository.findAllByOrderByNameAsc();
+	}
+
+	@Override
+	public List<String> findSuggestion(String text) {
+		List<Tag> tags = tagRepository.findAllByNameLikeOrderByNameAsc("%"+text+"%");
+		List<String> listTag = new ArrayList<String>();
+		for (Tag t : tags) {
+			listTag.add(t.getName());
+		}
+		return listTag;
 	}
 
 }

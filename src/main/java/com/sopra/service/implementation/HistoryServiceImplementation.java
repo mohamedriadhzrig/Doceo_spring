@@ -4,9 +4,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.sopra.JpaRepositories.HistoryRepository;
-import com.sopra.core.history.History;
-import com.sopra.core.history.HistoryService;
+import com.sopra.DAO.HistoryRepository;
+import com.sopra.entities.History;
+import com.sopra.services.HistoryService;
 @Transactional
 @Service
 public class HistoryServiceImplementation implements HistoryService {

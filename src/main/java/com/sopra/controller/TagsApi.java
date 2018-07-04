@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.sopra.core.tag.TagService;
+import com.sopra.services.TagService;
 
 @RestController
 @RequestMapping(path = "tags")
@@ -18,7 +18,7 @@ public class TagsApi {
 	TagService tagService;
 
 	@GetMapping
-	public ResponseEntity getTags() {
+	public ResponseEntity<?> getTags() {
 		return ResponseEntity.ok(new HashMap<String, Object>() {
 			{
 				put("tags", tagService.findAll());

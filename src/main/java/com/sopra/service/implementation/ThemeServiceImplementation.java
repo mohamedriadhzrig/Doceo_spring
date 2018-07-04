@@ -7,9 +7,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.sopra.JpaRepositories.ThemeRepository;
-import com.sopra.core.theme.Theme;
-import com.sopra.core.theme.ThemeService;
+import com.sopra.DAO.ThemeRepository;
+import com.sopra.entities.Theme;
+import com.sopra.services.ThemeService;
 
 @Transactional
 @Service

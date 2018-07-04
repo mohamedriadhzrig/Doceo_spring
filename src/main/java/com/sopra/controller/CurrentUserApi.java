@@ -22,21 +22,21 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.fasterxml.jackson.annotation.JsonRootName;
-import com.sopra.api.exception.InvalidRequestException;
-import com.sopra.core.article.Article;
-import com.sopra.core.article.ArticleService;
-import com.sopra.core.authority.Authority;
-import com.sopra.core.authority.AuthorityService;
-import com.sopra.core.history.History;
-import com.sopra.core.rate.RateService;
-import com.sopra.core.team.TeamService;
-import com.sopra.core.theme.Theme;
-import com.sopra.core.theme.ThemeService;
-import com.sopra.core.user.User;
-import com.sopra.core.user.UserService;
-import com.sopra.core.utility.EncryptService;
 import com.sopra.data.UserData;
 import com.sopra.data.UserWithToken;
+import com.sopra.entities.Article;
+import com.sopra.entities.Authority;
+import com.sopra.entities.History;
+import com.sopra.entities.Theme;
+import com.sopra.entities.User;
+import com.sopra.exception.InvalidRequestException;
+import com.sopra.services.ArticleService;
+import com.sopra.services.AuthorityService;
+import com.sopra.services.RateService;
+import com.sopra.services.TeamService;
+import com.sopra.services.ThemeService;
+import com.sopra.services.UserService;
+import com.sopra.utility.EncryptService;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -74,13 +74,16 @@ public class CurrentUserApi {
 		User user = userService.findById(currentUser.getId()).get();
 
 		List<UserHistory> list1 = new ArrayList<UserHistory>();
-		List<History> histories=user.getHistories();
+		List<History> histories = user.getHistories();
 		Collections.sort(histories, (o1, o2) -> o2.getSeenAt().compareTo(o1.getSeenAt()));
 		for (History h : histories) {
 
 			Article a = articleService.findArticleBySlug(h.getArticleSlug());
-			UserHistory userHistory = new UserHistory(a.getTitle(), a.getSlug(), h.getSeenAt().toString());
-			list1.add(userHistory);
+			if (!(a == null)) {
+				UserHistory userHistory = new UserHistory(a.getTitle(), a.getSlug(), h.getSeenAt().toString());
+
+				list1.add(userHistory);
+			}
 
 		}
 

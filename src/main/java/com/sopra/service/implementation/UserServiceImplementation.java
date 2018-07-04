@@ -8,13 +8,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.sopra.JpaRepositories.AuthorityRepository;
-import com.sopra.JpaRepositories.UserRepository;
-import com.sopra.core.authority.Authority;
-import com.sopra.core.user.User;
-import com.sopra.core.user.UserService;
+import com.sopra.DAO.AuthorityRepository;
+import com.sopra.DAO.UserRepository;
 import com.sopra.data.AdminUserDataList;
 import com.sopra.data.UserDetails;
+import com.sopra.entities.Authority;
+import com.sopra.entities.User;
+import com.sopra.services.UserService;
 
 @Transactional
 @Service
