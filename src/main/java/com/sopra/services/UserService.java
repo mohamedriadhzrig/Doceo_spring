@@ -17,5 +17,7 @@ public interface UserService {
 	Optional<User> findByEmail(String email);
 
 	void updatePaswword(String password, Long id);
+	
+	Optional<User> findUserByToken(String token);
 
 }

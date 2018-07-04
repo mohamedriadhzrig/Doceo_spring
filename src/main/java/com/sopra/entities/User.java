@@ -58,9 +58,18 @@ public class User implements UserDetails, Serializable {
 	
 	@OneToMany(fetch=FetchType.LAZY, mappedBy="user")
 	private List<History> histories=new ArrayList<History>();
-	
+	private String token;
 	@ManyToOne
 	private Team team;
+
+	
+	public String getToken() {
+		return token;
+	}
+
+	public void setToken(String token) {
+		this.token = token;
+	}
 
 	public List<Rate> getRate() {
 		return rate;
@@ -77,6 +86,17 @@ public class User implements UserDetails, Serializable {
 	public void setTeam(Team team) {
 		this.team = team;
 	}
+	
+	public String getEnabled() {
+		return enabled;
+	}
+
+	public void setEnabled(String enabled) {
+		this.enabled = enabled;
+	}
+
+	@Column(name = "enabled")
+    private String enabled="false";
 
 	@ManyToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
 	@JoinTable(name = "user_authority", joinColumns = @JoinColumn(name = "user_id", referencedColumnName = "id"), inverseJoinColumns = @JoinColumn(name = "authority_id", referencedColumnName = "id"))
@@ -163,6 +183,7 @@ public class User implements UserDetails, Serializable {
 		if (!"".equals(image)) {
 			this.image = image;
 		}
+		this.enabled="false";
 	}
 
 	public User(String email, String username, String password, String bio, String image) {
@@ -172,6 +193,7 @@ public class User implements UserDetails, Serializable {
 		this.password = password;
 		this.image = image;
 		this.bio = bio;
+		this.enabled="false";
 	}
 
 	public String getImage() {
@@ -291,10 +313,14 @@ public class User implements UserDetails, Serializable {
 		this.lastname = lastname;
 		this.authorities = authorities;
 		this.articles = articles;
+		this.enabled="false";
 	}
 
 	public User() {
 		super();
 	}
+
+	
+	
 
 }

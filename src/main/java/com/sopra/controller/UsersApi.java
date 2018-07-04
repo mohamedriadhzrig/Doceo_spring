@@ -2,12 +2,14 @@ package com.sopra.controller;
 
 import static org.springframework.web.bind.annotation.RequestMethod.POST;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 
 import org.hibernate.validator.constraints.Email;
@@ -18,6 +20,8 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.sopra.data.UserData;
@@ -69,7 +73,7 @@ public class UsersApi {
 		}
 
 		if (userService.findByEmail(registerParam.getEmail()).isPresent()) {
-			bindingResult.rejectValue("email", "DUPLICATED", "duplicated email");	
+			bindingResult.rejectValue("email", "DUPLICATED", "duplicated email");
 			throw new InvalidRequestException(bindingResult);
 		}
 
@@ -81,25 +85,32 @@ public class UsersApi {
 	@RequestMapping(path = "/users/login", method = POST)
 	public ResponseEntity userLogin(@Valid @RequestBody LoginParam loginParam, BindingResult bindingResult) {
 		Optional<User> optional = userService.findByEmail(loginParam.getEmail());
-		if (optional.isPresent() && encryptService.check(loginParam.getPassword(), optional.get().getPassword())) {
-			Optional<User> user = userService.findById(optional.get().getId());
-			Authority authority = authorityService.findAuthorityByName("ADMIN");
+		
+		
+			if (optional.isPresent() && encryptService.check(loginParam.getPassword(), optional.get().getPassword())) {
+				if (optional.get().getEnabled().equals("false")) {
+					bindingResult.rejectValue("Account", "INVALID", "Please confirm your inscription by your Email");
+					throw new InvalidRequestException(bindingResult);
+				}else {
+				Optional<User> user = userService.findById(optional.get().getId());
+				Authority authority = authorityService.findAuthorityByName("ADMIN");
 
-			List<String> themes = new ArrayList<String>();
-			for (Theme t : user.get().getThemes()) {
-				themes.add(t.getName());
+				List<String> themes = new ArrayList<String>();
+				for (Theme t : user.get().getThemes()) {
+					themes.add(t.getName());
+				}
+
+				UserData userData = new UserData(null, user.get().getEmail(), user.get().getUsername(),
+						user.get().getBio(), user.get().getImage(), user.get().getAuthorities().contains(authority),
+						themes, user.get().getTeam().getName() + "");
+				return ResponseEntity.ok(userResponse(new UserWithToken(userData, jwtService.toToken(optional.get()))));
+				}
+			} else {
+				bindingResult.rejectValue("password", "INVALID", "invalid email or password");
+				throw new InvalidRequestException(bindingResult);
 			}
-
-			UserData userData = new UserData(null, user.get().getEmail(), user.get().getUsername(), user.get().getBio(),
-					user.get().getImage(), user.get().getAuthorities().contains(authority), themes,
-					user.get().getTeam().getName()+"");
-			return ResponseEntity.ok(userResponse(new UserWithToken(userData, jwtService.toToken(optional.get()))));
-
-		} else {
-			bindingResult.rejectValue("password", "INVALID", "invalid email or password");
-			throw new InvalidRequestException(bindingResult);
 		}
-	}
+	
 
 	@PostMapping("/forgetpassword")
 	public ResponseEntity recoverPassword(@Valid @RequestBody PasswordRecovery passwordRecovery,
@@ -136,21 +147,48 @@ public class UsersApi {
 
 		User user = new User(registerParam.getEmail(), registerParam.getUsername(),
 				encryptService.encrypt(registerParam.getPassword()), "", "default.png");
-		System.out.println(registerParam.getTeam());
+		
 		Team userTeam = teamService.findTeamByName(registerParam.getTeam());
-		System.out.println(userTeam.getName());
+		
 		user.setTeam(userTeam);
 		Authority authority = new Authority();
 		authority = authorityService.findAuthorityByName("USER");
 		user.getAuthorities().add(authority);
 		user.setBio(registerParam.getPosition());
-
+		user.setToken(jwtService.toToken(user));
 		User u = userService.save(user);
+		System.out.println(u.getEnabled());
 		// userTeam.getUsers().add(u);
 		teamService.save(userTeam);
 		UserData userData = new UserData(null, user.getEmail(), user.getUsername(), user.getBio(), user.getImage(),
 				false);
-		return ResponseEntity.status(201).body(userResponse(new UserWithToken(userData, jwtService.toToken(user))));
+
+		mailService.sendMail(user.getEmail(), "Registration Confirmation",
+				"http://localhost:8080/users/regitrationConfirm?token=" + user.getToken());
+
+		return ResponseEntity.status(201).body(
+				"please Valide your Email"/* userResponse(new UserWithToken(userData, jwtService.toToken(user))) */);
+	}
+
+	@RequestMapping(value = "/users/regitrationConfirm", method = RequestMethod.GET)
+	public void confirmRegistration(HttpServletResponse response,@RequestParam("token") String token) {
+		Optional<User> user = userService.findUserByToken(token);
+		if (user.isPresent()) {
+			user.get().setEnabled("true");
+			userService.save(user.get());
+			try {
+				response.sendRedirect("http://localhost:4200/login");
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		} else
+			try {
+				response.sendRedirect("http://localhost:4200/login");
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 	}
 }
 

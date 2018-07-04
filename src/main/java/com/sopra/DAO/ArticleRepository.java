@@ -29,7 +29,7 @@ public interface ArticleRepository extends JpaRepository<Article, Long> {
 	
 	List<Article> findByTeamIsAndStatutIsOrderByCreatedAtDesc(Team team, String statut);
 	
-	List<Article> findByBodyLikeOrderByCreatedAtDesc(String text, String statut);
+	List<Article> findByBodyLikeAndStatutIsOrderByCreatedAtDesc(String text, String statut);
 	
 	
 	/********/

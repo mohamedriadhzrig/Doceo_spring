@@ -32,7 +32,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 				.authenticated().antMatchers(HttpMethod.POST, "/users", "/team/**", "/users/login", "/forgetpassword", "/upload","/user/themes","/project/**")
 				.permitAll()
 				.antMatchers(HttpMethod.GET,"/teams", "/articles/**", "/profiles/**", "/tags", "/getallfiles", "/files/**",
-						"/stats/**", "/team/**","/project/**")
+						"/stats/**", "/team/**","/project/**","/users/**")
 				.permitAll().anyRequest().authenticated().antMatchers(HttpMethod.POST, "/articles/**").permitAll()
 				.anyRequest().authenticated().antMatchers(HttpMethod.PUT, "/user").permitAll().anyRequest()
 				.authenticated();

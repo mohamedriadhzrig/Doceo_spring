@@ -87,4 +87,10 @@ public class UserServiceImplementation implements UserService {
 		return adminUserDataList;
 	}
 
+	@Override
+	public Optional<User> findUserByToken(String token) {
+		// TODO Auto-generated method stub
+		return userRepository.findUserByToken(token);
+	}
+
 }

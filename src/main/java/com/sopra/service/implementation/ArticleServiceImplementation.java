@@ -27,6 +27,7 @@ import com.sopra.services.ArticleService;
 import com.sopra.services.RateService;
 import com.sopra.services.TagService;
 import com.sopra.services.ThemeService;
+import com.sopra.utility.SearchQueryBuilder;
 
 @Transactional
 @Service
@@ -38,6 +39,9 @@ public class ArticleServiceImplementation implements ArticleService {
 	@Autowired
 	UserRepository userRepository;
 
+	@Autowired
+	private SearchQueryBuilder searchQueryBuilder;
+	
 	@Autowired
 	TagService tagService;
 
@@ -544,7 +548,7 @@ public class ArticleServiceImplementation implements ArticleService {
 		case 29:list.addAll(articleRepository.findByTeamIsAndStatutIsOrderByCreatedAtDesc(team, "valide"))
 			;
 			break;
-		case 30:list.addAll(articleRepository.findByBodyLikeOrderByCreatedAtDesc(text, "valide"))
+		case 30:list.addAll(/*searchQueryBuilder.getAll(text))  */ articleRepository.findByBodyLikeAndStatutIsOrderByCreatedAtDesc(text, "valide"))
 			;
 			break;
 		case 31:list.addAll(articleRepository.findByStatutIsOrderByCreatedAtDesc("valide"))
